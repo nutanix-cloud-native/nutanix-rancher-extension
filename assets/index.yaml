@@ -12,13 +12,13 @@ entries:
       catalog.cattle.io/ui-component: plugins
     apiVersion: v2
     appVersion: 0.5.0
-    created: "2024-02-20T19:34:35.350555026Z"
+    created: "2024-02-20T19:44:49.252766226Z"
     description: Nutanix Node Driver UI
-    digest: df5544cadb2410cef236c55b79bf978fc158a87b3803cea1724742b8808b3dfe
+    digest: 2b0abc9d46c8afd4c195e5da43d3a1ff1c96663ce4e261fc567fdd3004ef91fb
     icon: https://raw.githubusercontent.com/Triblox/rms-ntx-extension/main/pkg/nutanix/assets/icon-nutanix.svg
     name: nutanix
     type: application
     urls:
     - assets/nutanix/nutanix-0.5.0.tgz
     version: 0.5.0
-generated: "2024-02-20T19:34:35.349921297Z"
+generated: "2024-02-20T19:44:49.251933621Z"
