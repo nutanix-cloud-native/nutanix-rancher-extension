@@ -1,7 +1,6 @@
 name: Build and Release Extension Catalog
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
@@ -9,20 +8,75 @@ on:
     branches:
       - main
 
-defaults:
-  run:
-    shell: bash
-    working-directory: ./
 
 jobs:
   build-extension-catalog:
-    uses: rancher/dashboard/.github/workflows/build-extension-catalog.yml@master
+    name: Build container image
+    if: github.ref_type == 'tag' || (github.ref == 'refs/heads/main' && github.event_name != 'pull_request')
+    runs-on: ubuntu-latest
     permissions:
       actions: write
       contents: read
       packages: write
-    with:
-      registry_target: ghcr.io
-      registry_user: ${{ github.actor }}
-    secrets: 
-      registry_token: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Configure Git
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.8.0
+
+      - name: Setup yq
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          source: github
+          yq: v4.34.2
+
+      - name: Setup Nodejs and npm
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Setup yarn
+        run: npm install -g yarn
+
+      - name: Setup Nodejs with yarn caching
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn
+
+      - name: Parse Extension Name
+        if: github.ref_type == 'tag'
+        id: parsed-name
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          yarn parse-tag-name ${{ inputs.tagged_release }} ${{ github.run_id }} "catalog"
+
+      - name: Build and push UI image
+        run: |
+          publish="yarn publish-pkgs -cp -r ghcr.io -o ${{ github.repository_owner }}"
+          
+          if [[ -n "${{ inputs.tagged_release }}" ]]; then
+            publish="$publish -t ${{ inputs.tagged_release }}"
+          fi
+          
+          $publish
