@@ -21,6 +21,8 @@ jobs:
 
       - name: Black Duck Full Scan
         uses: synopsys-sig/synopsys-action@v1.7.0
+        env:
+          DETECT_PROJECT_NAME: ${{ github.event.repository.name }}
         with:
           blackduck_url: ${{ secrets.BLACKDUCK_URL }}
           blackduck_token: ${{ secrets.BLACKDUCK_API_TOKEN }}
