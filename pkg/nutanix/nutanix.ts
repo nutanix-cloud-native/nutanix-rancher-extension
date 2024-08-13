@@ -86,7 +86,7 @@ export class Nutanix {
           name: network.subnetType === "OVERLAY" ? `${network.name} (${vpc.name})` : network.name,
         }
       },
-      (network: any) => network.subnetType == "OVERLAY" || (network.clusterReference == this.clusterReferenceId && !network.isExternal), initial);
+      (network: any) => (network.subnetType == "OVERLAY" || network.clusterReference == this.clusterReferenceId) && !network.isExternal, initial);
   }
 
   public async getVpc(vpcReference: string) {
