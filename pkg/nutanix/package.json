@@ -1,8 +1,8 @@
 {
   "name": "nutanix",
   "description": "Nutanix Node Driver UI",
-  "icon": "https://raw.githubusercontent.com/Triblox/rms-ntx-extension/main/pkg/nutanix/assets/icon-nutanix.svg",
-  "version": "0.5.0",
+  "icon": "https://raw.githubusercontent.com/nutanix-cloud-native/nutanix-rancher-extension/main/pkg/nutanix/assets/icon-nutanix.svg",
+  "version": "0.6.0",
   "private": false,
   "rancher": {
     "annotations": {

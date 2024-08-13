@@ -1,52 +1,18 @@
 # Nutanix Rancher Extension
 
+#### Requirements
+
+- Nutanix Prism Central 2024.1
+- Nutanix Rancher Node Driver v3.6.0
+
+## Development
+
 https://rancher.github.io/dashboard/extensions/extensions-getting-started
-
-# Requirements
-
-### Nodes
-
-The node version of brew lastest is for me v20 but rancher is compatible up to 17.
-So i use the man tested version v16.19.1.
-
-1. install node version manager : `npm install -g n`
-2. Install and use : `n 16.19.1`
-3. Unlink brew node because he has highter priority: `brew unlink node`
-4. Change in your **package.json** the version used
-5. To relink brew node use : `brew link node`
-
-### Yarn
-
-Run the command : `npm install -g yarn`
-
-## Creation of the project
-
-```
-yarn create @rancher/app my-app
-cd my-app
-yarn install
-API=<Rancher Backend URL> yarn dev
-```
-
-## Creating the Extension
-
-```
-yarn create @rancher/pkg test [OPTIONS]
-```
-
-This will create a new UI Package in the ./pkg/test folder.
-
-### Extension Options
-
-There are two options that can be passed to the @rancher/pkg script:
-
-- -t: Creates additional boilerplate directories for types, including: 'l10n', 'models', 'edit', 'list', and 'detail'
-- -w: Creates a workflow file ('build-extension.yml') to be used as a Github action. This will automatically build your extension and release a Helm chart. Warning : rrequire additonal [prequesites](https://rancher.github.io/dashboard/extensions/extensions-getting-started#creating-a-release)
 
 ### Building the Extension
 
-```
-yarn build-pkg test
+```shell
+yarn build-pkg nutanix
 ```
 
 This will build the extension as a Vue library and the built extension will be placed in the dist-pkg folder.
@@ -55,7 +21,7 @@ This will build the extension as a Vue library and the built extension will be p
 
 To do this, edit the file `vue.config.js` in the root my-app folder, and add the name of the package you want to exclude, such as:
 
-```
+```js
 const config = require('@rancher/shell/vue.config');
 
 module.exports = config(__dirname, {
@@ -65,7 +31,7 @@ module.exports = config(__dirname, {
 
 Now we need to serve the built package locally by running the following:
 
-```
+```shell
 yarn serve-pkgs
 ```
 
@@ -86,7 +52,7 @@ In order to have a Helm repository you will need to enable Github Pages on your 
 
 If not done before use this command to add the workflow :
 
-```
+```shell
 yarn create @rancher/pkg test -w
 ```
 
