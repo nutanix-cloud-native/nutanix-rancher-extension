@@ -1,0 +1,15 @@
+plugin/nutanix-0.6.0.umd.min.5.js
+plugin/nutanix-0.6.0.umd.min.5.js.map
+plugin/nutanix-0.6.0.umd.min.6.js
+plugin/nutanix-0.6.0.umd.min.6.js.map
+plugin/nutanix-0.6.0.umd.min.cloud-credential.js
+plugin/nutanix-0.6.0.umd.min.cloud-credential.js.map
+plugin/nutanix-0.6.0.umd.min.js
+plugin/nutanix-0.6.0.umd.min.js.map
+plugin/nutanix-0.6.0.umd.min.machine-config.js
+plugin/nutanix-0.6.0.umd.min.machine-config.js.map
+plugin/nutanix-0.6.0.umd.min.vendors~cloud-credential~machine-config.js
+plugin/nutanix-0.6.0.umd.min.vendors~cloud-credential~machine-config.js.map
+plugin/nutanix-0.6.0.umd.min.vendors~machine-config.js
+plugin/nutanix-0.6.0.umd.min.vendors~machine-config.js.map
+plugin/package.json
