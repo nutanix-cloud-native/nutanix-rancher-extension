@@ -6,6 +6,15 @@
 - Nutanix Rancher Node Driver v3.6.0
 - Rancher 2.8.x 
 
+## Installation
+
+- In the Rancher UI, Go to the `Configuration` / `Extensions page`
+- Click on the three points top right and select `Manage Extension Catalogs`
+- Click on the `Import Extension Catalog` button
+- In the `Catalog Image Reference` add the following URL => `ghcr.io/nutanix-cloud-native/ui-extension-nutanix`
+- Click on `Load` and next on `Reload`
+- From the `Extensions` / `Available` page, install the Nutanix extension
+
 ## Development
 
 https://rancher.github.io/dashboard/extensions/extensions-getting-started
@@ -65,4 +74,3 @@ The URL should be listed as: https://<organization>.github.io/<repository>
 
 Once the URL has been added to the repository list, the extension should appear within the Extensions page.
 
-# Congrats !
