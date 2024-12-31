@@ -4,7 +4,7 @@
 
 - Nutanix Prism Central 2024.1
 - Nutanix Rancher Node Driver v3.6.0
-- Rancher 2.8.x 
+- Rancher 2.8.x / Rancher 2.9.x
 
 ## Installation
 
