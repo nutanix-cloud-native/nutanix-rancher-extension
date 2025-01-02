@@ -7,7 +7,8 @@
   "rancher": {
     "annotations": {
       "catalog.cattle.io/kube-version": ">= 1.16.0-0",
-      "catalog.cattle.io/rancher-version": ">= 2.7.0-0"
+      "catalog.cattle.io/rancher-version": ">= 2.7.0-0",
+      "catalog.cattle.io/ui-extensions-version": ">= 2.7.0-0"
     }
   },
   "scripts": {
