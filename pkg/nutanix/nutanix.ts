@@ -1,5 +1,14 @@
 import { isArray } from "lodash";
 
+type Options = {
+  value: any;
+  api: string;
+  field: string;
+  mapper?: Function;
+  filter?: Function;
+  initial?: string;
+  name?: string;
+}
 /**
  * Helper class for dealing with the nutanix API
  */
@@ -13,24 +22,17 @@ export class Nutanix {
   private credentialID: string = '';
   private endpoints: any;
 
-  // private region: string = '';
-
   private $dispatch: any;
 
   constructor($store: any, obj: any) {
-    // console.log("constructor: obj:");
-    // console.log(obj);
-
     if (obj.nutanixcredentialConfig) {
       Object.keys(obj.nutanixcredentialConfig).forEach((key) => {
-        // console.log(`${key} : ${obj.nutanixcredentialConfig[key]}`);
         (this as any)[key] = obj.nutanixcredentialConfig[key];
       });
       this.credentialID = obj.id;
     } else {
       // Copy from options to this
       Object.keys(obj).forEach((key) => {
-        // console.log(`${key} : ${obj[key]}`);
         (this as any)[key] = obj[key];
       });
     }
@@ -40,7 +42,7 @@ export class Nutanix {
 
   public async testConnection() {
     const baseUrl = `/meta/proxy/${this.endpoint}:${this.port}`;
-    const url = `${baseUrl}/api/clustermgmt/v4.0.b1/config/clusters`;
+    const url = `${baseUrl}/api/clustermgmt/v4.0/config/clusters`;
     const headers = {
       Accept: 'application/json',
       "X-API-Auth-Header": 'Basic ' + btoa(this.username + ':' + this.password)
@@ -67,46 +69,75 @@ export class Nutanix {
   }
 
   public async getClusterList(value: any, initial?: string) {
-    return await this.getOptions(value, "/api/clustermgmt/v4.0.b1/config/clusters", 'data', undefined,
-      (cluster: any) => cluster.config.hypervisorTypes.includes("AHV"), initial);
+    return await this.getOptions({
+      value,
+      api: "/api/clustermgmt/v4.0/config/clusters",
+      field: 'data',
+      filter: (cluster: any) => cluster.config.hypervisorTypes.includes("AHV"),
+      initial
+    });
   }
 
   public async getImages(value: any, initial?: string) {
-    return await this.getOptions(value, '/api/vmm/v4.0.a1/content/images', 'data', undefined, undefined, initial);
+    return await this.getOptions({
+      value,
+      api: '/api/vmm/v4.0/content/images',
+      field: 'data',
+      initial
+    });
   }
 
   public async getNetwork(value: any, initial?: string) {
-    return await this.getOptions(value, '/api/networking/v4.0.b1/config/subnets', 'data',
-      async (network: any) => {
+    return await this.getOptions({
+      value,
+      api: '/api/networking/v4.0/config/subnets',
+      field: 'data',
+      mapper: async (network: any) => {
         const vpc = network.subnetType === "OVERLAY" ? (await this.getVpc(network.vpcReference)).data : undefined;
-        // console.log("getNetwork: vpc: ", vpc);
         return {
           ...network,
           baseName: network.name,
           name: network.subnetType === "OVERLAY" ? `${network.name} (${vpc.name})` : network.name,
         }
       },
-      (network: any) => (network.subnetType == "OVERLAY" || network.clusterReference == this.clusterReferenceId) && !network.isExternal, initial);
+      filter: (network: any) => (network.subnetType == "OVERLAY" || network.clusterReference == this.clusterReferenceId) && !network.isExternal,
+      initial
+    });
   }
 
   public async getVpc(vpcReference: string) {
-    return await this.makeComputeRequest(`/api/networking/v4.0.b1/config/vpcs/${vpcReference}`);
+    return await this.makeComputeRequest(`/api/networking/v4.0/config/vpcs/${vpcReference}`);
   }
 
   public async getStorageContainer(value: any, initial?: string) {
-    return await this.getOptions(value, '/api/storage/v4.0.a3/config/storage-containers', 'data', undefined,
-      (storage: any) => storage.clusterExtId == this.clusterReferenceId, initial);
+    return await this.getOptions({
+      value,
+      api: '/api/clustermgmt/v4.0/config/storage-containers',
+      field: 'data',
+      filter: (storage: any) => storage.clusterExtId == this.clusterReferenceId,
+      initial
+    });
   }
 
   public async getCategories(value: any, initial?: string) {
-    return await this.getOptions(value, '/api/prism/v4.0.a2/config/categories', 'data',
-      (categorie: any) => { return { ...categorie, name: `${categorie.key}=${categorie.value}` } },
-      (categorie: any) => categorie.key !== "Project", initial);
+    return await this.getOptions({
+      value,
+      api: '/api/prism/v4.0/config/categories',
+      field: 'data',
+      mapper: (categorie: any) => { return { ...categorie, name: `${categorie.key}=${categorie.value}` } },
+      filter: (categorie: any) => categorie.key !== "Project",
+      initial
+    });
   }
 
   public async getProjectsName(value: any, initial?: string) {
-    return await this.getOptions(value, '/api/nutanix/v3/projects/list', 'entities',
-      (project: any) => { return { ...project, name: `${project.spec.name}` } }, undefined, initial);
+    return await this.getOptions({
+      value,
+      api: '/api/nutanix/v3/projects/list',
+      field: 'entities',
+      mapper: (project: any) => { return { ...project, name: `${project.spec.name}` } },
+      initial
+    });
   }
 
   // public async getNetworkNames(value: any, initial?: string) {
@@ -118,8 +149,30 @@ export class Nutanix {
   //   }, initial);
   // }
 
+  private async constructTotalResponse(apiPath: string, initialDataLength: number, total: number) {
+    const pageCount = Math.ceil(total / initialDataLength);
+    const data = [];
+    for (let i = 1; i < pageCount; i++) {
+      const nextPageResponse = await this.makeComputeRequest(`${apiPath}?$page=${i}`);
+      data.push(...nextPageResponse.data);
+    }
 
-  public async getOptions(value: any, api: string, field: string, mapper?: Function, filter?: Function, initial?: string) {
+    return data;
+  }
+
+  private async constructProjectTotalResponse(apiPath: string, initialDataLength: number, total: number) {
+    const pageCount = Math.ceil(total / initialDataLength);
+    const entities = [];
+    for (let i = 1; i < pageCount; i++) {
+      const nextPageResponse = await this.makeComputeRequest(`${apiPath}?$page=${i}`, 'POST');
+      entities.push(...nextPageResponse.entities);
+    }
+
+    return entities;
+  }
+
+  public async getOptions(options: Options) {
+    const { value, api, mapper, filter, initial, field } = options;
     // We are fetching the data for the options
     value.busy = true;
     value.enabled = true;
@@ -128,15 +181,24 @@ export class Nutanix {
     let res;
 
     if (api === '/api/nutanix/v3/projects/list') {
-      console.log("getOptions: api: /api/nutanix/v3/projects/list")
       res = await this.makeComputeRequest(api, 'POST');
+      const total = res?.metadata?.total_matches ?? 0;
+      const pageCount = res?.entities?.length ?? 0;
+      if (pageCount < total) {
+        const entities = await this.constructProjectTotalResponse(api, pageCount, total);
+        res.entities = [...res.entities, ...entities];
+      }
     }
     else {
       res = await this.makeComputeRequest(api);
-    }
+      const total = res?.metadata?.totalAvailableResults ?? 0;
+      const pageCount = res?.data?.length ?? 0;
 
-    // console.log("getOptions: api:" + api)
-    // console.log(res)
+      if (pageCount < total) {
+        const data = await this.constructTotalResponse(api, pageCount, total);
+        res.data = [...res.data, ...data];
+      }
+    }
 
     if (res && (res as any)[field]) {
       let list = (res as any)[field] || [];
@@ -144,9 +206,6 @@ export class Nutanix {
       if (filter) {
         list = list.filter((k: any) => filter(k));
       }
-
-      // console.log("getOptions: api: filter: " + api);
-      // console.log(list);
 
       if (mapper) {
         list = await Promise.all(list.map(async (k: any) => await mapper(k)));
@@ -163,9 +222,6 @@ export class Nutanix {
         });
         value.duplicates = unique;
       }
-
-      // console.log("getOptions: api: options: " + api);
-      // console.log(value.options);
 
       if (initial) {
         const found = value.options.find((option: any) => option.value.name === initial);
@@ -184,8 +240,6 @@ export class Nutanix {
   }
 
   public async makeComputeRequest(api: string, method: string = 'GET') {
-    // console.log("makeComputeRequest:")
-    // console.log(this)
     const baseUrl = `/meta/proxy/${this.endpoint}:${this.port}`;
     const url = `${baseUrl}${api}`;
 

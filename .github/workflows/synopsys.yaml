@@ -15,7 +15,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-node@v4
         with:
-          node-version: "16.19.x"
+          node-version: "20.17.x"
 
       - name: Build Project
         run: yarn install && yarn build-pkg nutanix
