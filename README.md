@@ -2,9 +2,11 @@
 
 #### Requirements
 
-- Nutanix Prism Central 2024.1
+- Nutanix Prism Central 2024.3
 - Nutanix Rancher Node Driver v3.6.0
-- Rancher 2.8.x / Rancher 2.9.x
+- Rancher 2.10.x 
+
+for old Rancher version please check branch `release-2.9.x`
 
 ## Installation
 
@@ -15,7 +17,6 @@
 - Click on the three points top right and select `Manage Extension Catalogs`  
 ![image](https://github.com/user-attachments/assets/54804ba4-cae9-431e-8231-321e94479652)
 
-  
 - Click on the `Import Extension Catalog` button  
   ![image](https://github.com/user-attachments/assets/f2fa3734-eb34-4ecf-9c5c-e2613db49cb0)
 
