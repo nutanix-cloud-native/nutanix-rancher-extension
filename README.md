@@ -19,7 +19,7 @@
 - Click on the `Import Extension Catalog` button  
   ![image](https://github.com/user-attachments/assets/f2fa3734-eb34-4ecf-9c5c-e2613db49cb0)
 
-- In the `Catalog Image Reference` add the following URL => `ghcr.io/nutanix-cloud-native/ui-extension-nutanix` and click on `Load`  
+- In the `Catalog Image Reference` add the following URL => `ghcr.io/nutanix-cloud-native/ui-extension-nutanix:0.7.0` and click on `Load`  
   ![image](https://github.com/user-attachments/assets/f9ab7eb1-2377-4fb8-8ed9-05f3f39b9ba9)
 
 - Click on `Reload`  
