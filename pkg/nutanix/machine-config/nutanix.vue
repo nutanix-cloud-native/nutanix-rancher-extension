@@ -7,7 +7,7 @@ import KeyValue from '@shell/components/form/KeyValue';
 import CodeMirror from '@shell/components/CodeMirror.vue';
 import Collapse from '@shell/components/Collapse.vue';
 import Checkbox from '@shell/rancher-components/Form/Checkbox/Checkbox.vue';
-import RadioGroup from '@shell/rancher-components/Form/Radio/RadioGroup.vue';
+import RadioGroup from "@components/Form/Radio/RadioGroup";
 
 import { NORMAN, SECRET } from '@shell/config/types';
 import { stringify } from '@shell/utils/error';
@@ -80,6 +80,7 @@ export default {
       required: true,
     }
   },
+  emits: ['validationChanged'],
 
   async fetch() {
     if ( !this.credentialId ) {
@@ -101,7 +102,7 @@ export default {
       return;
     }
 
-    await this.setClusterReferenceId(this.clusters.selected)
+    await this.setClusterReferenceId(this.clusters.selected.value);
 
     this.projectName.selected = this.projectName.options.find((o) => o.value.name === this.value.project)?.value;
     this.vmCpus.selected = this.value.vmCpus;
@@ -112,9 +113,10 @@ export default {
     this.vmImage.selected = this.vmImage.options.find((o) => o.value.name === this.value.vmImage)?.value;
     this.vmImageSize.selected = this.value.vmImageSize;
 
-    this.networks.selected = this.value.vmNetwork.map(e => this.networks.baseOption.find((o) => o.value.extId === e));
+    this.networks.selected = this.value.vmNetwork.map(e => this.networks.baseOption.find((o) => o.value.extId === e || o.extId === e));
+    this.filterNetworks();
     this.bootType = this.value.bootType === "legacy" ? "Legacy" : "UEFI";
-    this.vmCategories.selected = this.value.vmCategories.map(e => this.vmCategories.options.find((o) => o.value.name === e));
+    this.vmCategories.selected = this.value.vmCategories.map(e => this.vmCategories.options.find((o) => o.name === e || o.value?.name === e));
 
     this.vmSerialPort = this.value.vmSerialPort;
 
@@ -141,6 +143,24 @@ export default {
     'credentialId'() {
       this.$fetch();
     },
+    'value'(newVal, oldVal) {
+      const oldCat = oldVal.vmCategories;
+      const oldNetworks = oldVal.vmNetwork;
+
+      if (this.vmCategories.selected.length) {
+        this.value.vmCategories = this.vmCategories.selected[0]?.label === undefined ?
+          this.vmCategories.selected.map(c => c.name) : this.vmCategories.selected.map(c => c.value.name);
+      } else {
+        this.value.vmCategories = [];
+      }
+      const uniqueNetworks =  _.uniq(this.value.vmNetwork);
+      this.value.vmNetwork = [...uniqueNetworks];
+    }
+  },
+  computed: {
+    value() {
+      return this.value;
+    }
   },
 
   methods: {
@@ -149,7 +169,6 @@ export default {
     async initAuthentification() {
       let obj = this.InitData();
       Object.keys(obj).forEach((key) => {
-        // console.log(`RESET DATA >>> ${key} : ${obj[key]}`);
         (this)[key] = obj[key];
       });
 
@@ -176,7 +195,7 @@ export default {
         console.error(e);
       }
 
-      this.$set(this, 'authenticating', true);
+      this['authenticating'] = true;
 
       // Create a Nutanix object to do the API calls
       const os = new Nutanix(this.$store, this.credential);
@@ -225,7 +244,7 @@ export default {
       await this.os.getProjectsName(this.projectName, this.value?.projectName);
 
       if (!this.projectName.enabled) {
-        this.$set(this, 'authenticating', false);
+        this['authenticating'] = false;
         this.errors.push('Unable to get Nutanix Projects Name');
         return;
       }
@@ -254,7 +273,7 @@ export default {
     // This function is call when the cluster selector input change
     // this allow to dynamically change the network available for this cluster
     async setClusterReferenceId(e) {
-      this.os.clusterReferenceId = e.value.extId;
+      this.os.clusterReferenceId = e.extId;
       this.networks.options = [];
       this.storageContainer.options = [];
 
@@ -267,7 +286,7 @@ export default {
 
         if (this.projectName.selected) {
           let networkIdList = this.projectName.selected.status.resources.subnet_reference_list.map(c => c.uuid);
-          this.networks.options = this.networks.baseOption.filter(network => networkIdList.includes(network.value.extId)); //  || vpcIdList.includes(network.value.extId)
+          this.networks.options = this.networks.baseOption.filter(network => networkIdList.includes(network.extId)); //  || vpcIdList.includes(network.value.extId)
           this.networks.baseOption = this.networks.options;
         }
 
@@ -294,10 +313,10 @@ export default {
         this.clusters.options = this.clusters.baseOption;
       }
       else {
-        let clusterReferenceIdList = e.value.status.resources.cluster_reference_list.map(c => c.uuid);
+        let clusterReferenceIdList = e.status.resources.cluster_reference_list.map(c => c.uuid);
 
         this.clusters.options = this.clusters.baseOption.filter(c =>
-          clusterReferenceIdList.includes(c.value.extId)
+          clusterReferenceIdList.includes(c.extId)
         );
       }
 
@@ -318,11 +337,11 @@ export default {
 
     // This function is call when the image selector input change
     dynamicVmImageSize(object) {
-      this.vmImageSize.min = 10.0 + Math.ceil(object.value.sizeBytes / 1073741824);
+      this.vmImageSize.min = 10.0 + Math.ceil(object.sizeBytes / 1073741824);
       // if (this.vmImageSize.selected < this.vmImageSize.min)
-      this.vmImageSize.selected = 10.0 + Math.ceil(object.value.sizeBytes / 1073741824);
+      this.vmImageSize.selected = 10.0 + Math.ceil(object.sizeBytes / 1073741824);
 
-      if (this.vmImage?.duplicates?.find(e => e.name === object.value.name) !== undefined) {
+      if (this.vmImage?.duplicates?.find(e => e.name === object.name) !== undefined) {
         this.vmImage.status = "warning"
         this.vmImage.tooltip = this.t('driver.nutanix.config.component.vmImage.duplicates')
       }
@@ -332,17 +351,35 @@ export default {
       }
     },
 
-    // This function is call when the network selector input change
-    dynamicNetwork() {
-      if (this.networks.selected.length !== 0)
-        if (this.networks.selected[0].subnetType)
-          this.networks.options = this.networks.baseOption.filter(network => this.networks.selected[0].subnetType === network.value.subnetType && this.networks.selected[0]?.vpcReference == network.value?.vpcReference);
+    filterNetworks() {
+      if (this.networks.selected.length !== 0) {
+        if (this.networks.selected[0]?.subnetType)
+          this.networks.options = this.networks.baseOption.filter(
+          (network) =>  {
+            const selectedNetwork = this.networks.selected[0];
+            return (
+              selectedNetwork.subnetType === network.value.subnetType && 
+              selectedNetwork.vpcReference === network.value.vpcReference && 
+              selectedNetwork.isAdvancedNetworking === network.value.isAdvancedNetworking
+            );
+          }
+        );
         else {
           this.networks.selected = this.networks.selected.filter(network => network.value);
-          this.networks.options = this.networks.baseOption.filter(network => this.networks.selected[0].value.subnetType === network.value.subnetType && this.networks.selected[0].value?.vpcReference == network.value?.vpcReference);
+          this.networks.options = this.networks.baseOption.filter(
+            (network) => {
+              const selectedNetwork = this.networks.selected[0];
+              return (
+                selectedNetwork.value.subnetType === network.value.subnetType && 
+                selectedNetwork.value.vpcReference == network.value.vpcReference &&
+                selectedNetwork.value.isAdvancedNetworking === network.value.isAdvancedNetworking
+              );
+            }
+          );
         }
-      else
+      } else {
         this.networks.options = this.networks.baseOption;
+      }
     },
 
     // This function is call when the additional disk size input change
@@ -357,7 +394,7 @@ export default {
 
     // This function is call when the user add a wrong tag on a select input multiple
     labelSelectAddWrongTag(object, component) {
-      component.selected = object.filter(network => network.value);
+      component.selected = object.filter(network => network);
     },
 
     // Save all input data is the VUE values
@@ -365,7 +402,7 @@ export default {
       // Note: We don't need to provide password as this is picked up via the credential
 
       // Copy the values from the form to the correct places on the value
-      this.value.cluster = this.clusters.selected?.name;
+      this.value.cluster = this.clusters.selected?.value?.name ?? this.clusters.selected.name;
 
       this.value.project = this.projectName.selected?.name == "-- NO PROJECT --" ? null : this.projectName.selected?.name;
       this.value.vmCpus = this.vmCpus.selected.toString();
@@ -375,11 +412,16 @@ export default {
       // this.value.vmMem = []; // Uncomment to test the value by generate an error with the driver
       this.value.vmImage = this.vmImage.selected?.name;
       this.value.vmImageSize = this.vmImageSize.selected.toString();
-      this.value.vmNetwork = this.networks.selected.map(e => e.value.extId);
+      const networks = _.uniq(this.networks.selected.map(e => e.extId));
+      this.value.vmNetwork = networks;
       this.value.bootType = this.bootType.toLowerCase();
 
-      this.value.vmCategories = this.vmCategories.selected[0]?.label === undefined ?
-        this.vmCategories.selected.map(c => c.name) : this.vmCategories.selected.map(c => c.value.name);
+      if (this.vmCategories.selected.length) {
+        this.value.vmCategories = this.vmCategories.selected[0]?.label === undefined ?
+          this.vmCategories.selected.map(c => c.name) : this.vmCategories.selected.map(c => c.value.name);
+      } else {
+        this.value.vmCategories = [];
+      }
       this.value.vmSerialPort = this.vmSerialPort;
 
       if (this.additionalDiskSize.selected !== null)
@@ -391,9 +433,6 @@ export default {
         this.value.storageContainer = this.storageContainer.selected?.containerExtId;
 
       this.value.cloudInit = this.cloudInit;
-
-      // console.log("syncValue: end");
-      // console.log(this);
     },
 
     // This function is call when the user change the input value
@@ -429,7 +468,6 @@ export default {
         !!this.vmImage.selected &&
         !!this.vmImageSize.selected &&
         this.networks.selected.length > 0) {
-        console.log("canAuthenticate: true");
         this.$emit('validationChanged', true);
         return
       }
@@ -487,19 +525,19 @@ export default {
       <div class="row mt-10"> <!-- Project Name / Cluster -->
         <div class="col span-6"> <!-- Project Name -->
           <LabeledSelect
-            v-model="projectName.selected"
+            v-model:value="projectName.selected"
             labelKey="driver.nutanix.config.component.projectName.label"
             :placeholder="t(`driver.nutanix.config.component.projectName.placeholder`)"
             :options="projectName.options"
             :disabled="!projectName.enabled || mybusy"
             :loading="projectName.busy"
             :searchable="false"
-            @selecting="dynamicProjectName($event); canAuthenticate()"
+            @update:value="dynamicProjectName($event); canAuthenticate()"
           />
         </div>
         <div class="col span-6"> <!-- Cluster input -->
           <LabeledSelect
-            v-model="clusters.selected"
+            v-model:value="clusters.selected"
             labelKey="driver.nutanix.config.component.cluster.label"
             :placeholder="t(`driver.nutanix.config.component.cluster.placeholder`)"
             :options="clusters.options"
@@ -507,7 +545,7 @@ export default {
             :loading="clusters.busy"
             :searchable="false"
             :required="true"
-            @selecting="setClusterReferenceId($event); canAuthenticate()"
+            @update:value="setClusterReferenceId($event); canAuthenticate()"
           />
         </div>
       </div>
@@ -520,17 +558,16 @@ export default {
       <div class="row mt-10"> <!-- vmCpus  /  Cores  / vmMem  -->
         <div class="col span-4"> <!-- vmCpus -->
           <UnitInput
-            v-model="vmCpus.selected"
+            :value="vmCpus.selected"
             labelKey="driver.nutanix.config.component.vmCpus.label"
             :suffix="t(`driver.nutanix.config.component.vmCpus.suffix`)"
-            type="text"
+            type="number"
             :disabled="!vmCpus.enabled || mybusy"
             :loading="vmCpus.busy"
             :required="true"
             :min="vmCpus.min"
             :max="vmCpus.max"
-            @keyup="validInput($event, vmCpus), canAuthenticate()"
-            @input="validInput($event, vmCpus); canAuthenticate()"
+            @update:value="validInput($event, vmCpus); canAuthenticate()"
             :status="vmCpus.status"
             :tooltip="vmCpus.tooltip"
           />
@@ -539,40 +576,39 @@ export default {
             :valueWhenTrue="true"
             labelKey="driver.nutanix.config.component.vmCpuPassthrough.label"
             style="margin-top: 5px;"
-            @input="vmCpuPassthrough = !vmCpuPassthrough;"
+            @update:value="vmCpuPassthrough = !vmCpuPassthrough;"
             :disabled="mybusy"
           />
         </div>
         <div class="col span-4"> <!-- Cores -->
           <UnitInput
-            v-model="vmCores.selected"
+            :value="vmCores.selected"
             labelKey="driver.nutanix.config.component.vmCores.label"
             :suffix="t(`driver.nutanix.config.component.vmCores.suffix`)"
-            type="text"
+            type="number"
             :disabled="!vmCores.enabled || mybusy"
             :loading="vmCores.busy"
             :required="true"
             :min="vmCores.min"
             :max="vmCores.max"
             @keyup="validInput($event, vmCores); canAuthenticate()"
-            @input="validInput($event, vmCores); canAuthenticate()"
+            @update:value="validInput($event, vmCores); canAuthenticate()"
             :status="vmCores.status"
             :tooltip="vmCores.tooltip"
           />
         </div>
         <div class="col span-4"> <!-- vmMem -->
           <UnitInput
-            v-model="vmMem.selected"
+            :value="vmMem.selected"
             labelKey="driver.nutanix.config.component.vmMem.label"
             :suffix="t(`driver.nutanix.config.component.vmMem.suffix`)"
-            type="text"
+            type="number"
             :disabled="!vmMem.enabled || mybusy"
             :loading="vmMem.busy"
             :required="true"
             :min="vmMem.min"
             :max="vmMem.max"
-            @keyup="validInput($event, vmMem); canAuthenticate()"
-            @input="validInput($event, vmMem); canAuthenticate()"
+            @update:value="validInput($event, vmMem); canAuthenticate()"
             :status="vmMem.status"
             :tooltip="vmMem.tooltip"
           />
@@ -581,7 +617,7 @@ export default {
       <div class="row mt-10"> <!-- Image  /  VM Disk Size -->
         <div class="col span-6"> <!-- Image input -->
           <LabeledSelect
-            v-model="vmImage.selected"
+            v-model:value="vmImage.selected"
             labelKey="driver.nutanix.config.component.vmImage.label"
             :placeholder="t(`driver.nutanix.config.component.vmImage.placeholder`)"
             :options="vmImage.options"
@@ -591,12 +627,12 @@ export default {
             :required="true"
             :status="vmImage.status"
             :tooltip="vmImage.tooltip"
-            @selecting="dynamicVmImageSize($event); canAuthenticate()"
+            @update:value="dynamicVmImageSize($event); canAuthenticate()"
           />
         </div>
         <div class="col span-6"> <!-- VM Disk Size input -->
           <UnitInput
-            v-model="vmImageSize.selected"
+            :value="vmImageSize.selected"
             labelKey="driver.nutanix.config.component.vmImageSize.label"
             :suffix="t(`driver.nutanix.config.component.vmImageSize.suffix`)"
             :min="vmImageSize.min"
@@ -604,8 +640,8 @@ export default {
             :disabled="!vmImageSize.enabled || mybusy"
             :loading="vmImageSize.busy"
             :required="true"
-            @keyup="validInput($event, vmImageSize); canAuthenticate()"
-            @input="validInput($event, vmImageSize); canAuthenticate()"
+            type="number"
+            @update:value="validInput($event, vmImageSize); canAuthenticate()"
             :status="vmImageSize.status"
             :tooltip="vmImageSize.tooltip"
           />
@@ -614,7 +650,7 @@ export default {
       <div class="row mt-10" style="align-items: center;"> <!-- Network Select / Boot Configuration -->
         <div class="col span-6"> <!-- Network Select -->
           <LabeledSelect
-            v-model="networks.selected"
+            v-model:value="networks.selected"
             labelKey="driver.nutanix.config.component.vmNetwork.label"
             :placeholder="t(`driver.nutanix.config.component.vmNetwork.placeholder`)"
             :taggable="true"
@@ -624,8 +660,7 @@ export default {
             :loading="networks.busy"
             :searchable="true"
             :required="true"
-            @input="dynamicNetwork(); canAuthenticate()"
-            @selecting="labelSelectAddWrongTag($event, networks); dynamicNetwork(); canAuthenticate()"
+            @update:value="labelSelectAddWrongTag($event, networks); filterNetworks(); canAuthenticate()"
           />
         </div>
         <div class="col span-6" style="padding-left: 10px;"> <!-- Boot Configuration -->
@@ -639,7 +674,7 @@ export default {
             :options='["Legacy", "UEFI"]'
             :row="true"
             :value="bootType"
-            @input="bootType = $event"
+            @update:value="bootType = $event"
             :disabled="mybusy"
           />
         </div>
@@ -647,7 +682,7 @@ export default {
       <div class="row mt-10"> <!-- VM Categories -->
         <div class="col span-12">
           <LabeledSelect
-            v-model="vmCategories.selected"
+            v-model:value="vmCategories.selected"
             labelKey="driver.nutanix.config.component.vmCategories.label"
             :placeholder="t(`driver.nutanix.config.component.vmCategories.placeholder`)"
             :taggable="true"
@@ -666,7 +701,7 @@ export default {
         :valueWhenTrue="true"
         labelKey="driver.nutanix.config.component.vmSerialPort.label"
         style="margin-top: 5px;"
-        @input="vmSerialPort = !vmSerialPort;"
+        @update:value="vmSerialPort = !vmSerialPort;"
         :disabled="mybusy"
       />
       <!-- Collapse Additional Disk Size  /  Storage Container -->
@@ -679,25 +714,25 @@ export default {
         <div class="row"> <!-- Additional Disk Size  /  Storage Container -->
           <div class="col span-6">
             <UnitInput
-              v-model="additionalDiskSize.selected"
+              :value="additionalDiskSize.selected"
               labelKey="driver.nutanix.config.component.diskSize.label"
               :suffix="t(`driver.nutanix.config.component.diskSize.suffix`)"
-              type="text"
+              type="number"
               :disabled="!additionalDiskSize.enabled || mybusy"
               :loading="additionalDiskSize.busy"
-              @keyup="dynamicStorageContainer($event); canAuthenticate()"
+              @update:value="dynamicStorageContainer($event); canAuthenticate()"
             />
           </div>
           <div class="col span-6">
             <LabeledSelect
-              v-model="storageContainer.selected"
+              v-model:value="storageContainer.selected"
               labelKey="driver.nutanix.config.component.storageContainer.label"
               :placeholder="t(`driver.nutanix.config.component.storageContainer.placeholder`)"
               :options="storageContainer.options"
               :disabled="!additionalDiskSize.selected || !storageContainer.enabled || mybusy"
               :loading="storageContainer.busy"
               :searchable="false"
-              @selecting="canAuthenticate()"
+              @update:value="canAuthenticate()"
             />
           </div>
         </div>

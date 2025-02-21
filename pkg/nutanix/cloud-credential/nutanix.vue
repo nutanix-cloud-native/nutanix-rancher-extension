@@ -64,6 +64,7 @@ export default {
         !!this.value?.decodedData?.password;
     }
   },
+  emits: ['validationChanged'],
 
   methods: {
 
@@ -86,7 +87,7 @@ export default {
     },
 
     async addHostToAllowList() {
-      this.$set(this, 'allowBusy', true);
+      this['allowBusy'] = true;
       const u = parseUrl(this.value.decodedData.endpoint);
 
       this.driver.whitelistDomains = this.driver.whitelistDomains || [];
@@ -100,13 +101,13 @@ export default {
 
         // this.$refs.connect.$el.click();
 
-        this.$set(this, 'error', ""); // TODO:
+        this['error'] = ""; // TODO:
         this.connect();
 
 
       } catch (e) {
         console.error('Could not update driver', e); // eslint-disable-line no-console
-        this.$set(this, 'allowBusy', false);
+        this['allowBusy'] = false;
       }
 
     },
@@ -116,14 +117,14 @@ export default {
         return;
       }
 
-      this.$set(this, 'error', '');
-      this.$set(this, 'success', '');
-      this.$set(this, 'errorAllowHost', false);
+      this['error'] = '';
+      this['success'] = '';
+      this['errorAllowHost'] = false;
 
       let okay = false;
 
       if (!this.value.decodedData.endpoint) {
-        this.$set(this, 'busy', false);
+        this['busy'] = false;
         return;
       }
 
@@ -138,30 +139,28 @@ export default {
         insecure:   this.value.decodedData.insecure,
       });
 
-      this.$set(this, 'allowBusy', false);
-      this.$set(this, 'busy', true);
+      this['allowBusy'] = false;
+      this['busy'] = true;
 
       const res = await os.testConnection();
-      console.log(res)
 
       if (res.error) {
-        console.error(res.error); // eslint-disable-line no-console
         okay = false;
 
 
         if (res.error._status === 502 && !this.hostInAllowList()) {
-          this.$set(this, 'errorAllowHost', true);
+          this['errorAllowHost'] = true;
         } else if (res.error._status === 401) {
-          this.$set(this, 'error', "Authentification Failed");
+          this['error'] = "Authentification Failed";
         }else {
-          this.$set(this, 'error', res.error.message ? res.error.message : "Something Went wrong");
+          this['error'] = res.error.message ? res.error.message : "Something Went wrong";
         }
       } else {
         okay = true;
-        this.$set(this, 'success', `Welcome ${this.value.decodedData.username}, connected to ${this.value.decodedData.endpoint}`);
+        this['success'] = `Welcome ${this.value.decodedData.username}, connected to ${this.value.decodedData.endpoint}`;
       }
 
-      this.$set(this, 'busy', false);
+      this['busy'] = false;
       this.$emit('validationChanged', okay);
     }
   }
@@ -169,7 +168,6 @@ export default {
 </script>
 
 <template>
-  <div>
     <div class="row">
       <div class="col span-6"> <!-- Endpoint -->
         <LabeledInput
@@ -179,7 +177,7 @@ export default {
           placeholder-key="driver.nutanix.auth.placeholders.endpoint"
           type="text"
           :mode="mode"
-          @input="value.setData('endpoint', $event);"
+          @update:value="value.setData('endpoint', $event);"
         />
       </div>
       <div class="col span-6"> <!-- Port -->
@@ -190,7 +188,7 @@ export default {
           placeholder-key="driver.nutanix.auth.placeholders.port"
           type="text"
           :mode="mode"
-          @input="value.setData('port', $event);"
+          @update:value="value.setData('port', $event);"
         />
       </div>
     </div>
@@ -204,7 +202,7 @@ export default {
           placeholder-key="driver.nutanix.auth.placeholders.username"
           type="text"
           :mode="mode"
-          @input="value.setData('username', $event);"
+          @update:value="value.setData('username', $event);"
         />
       </div>
       <div class="col span-6"> <!-- Password -->
@@ -216,7 +214,7 @@ export default {
           placeholder-key="driver.nutanix.auth.placeholders.password"
           type="password"
           :mode="mode"
-          @input="value.setData('password', $event);"
+          @update:value="value.setData('password', $event);"
         />
       </div>
     </div>
@@ -228,7 +226,7 @@ export default {
           :value="value.decodedData.insecure"
           :valueWhenTrue="true"
           label-key="driver.nutanix.auth.fields.insecure"
-          @input="value.setData('insecure', $event);"
+          @update:value="value.setData('insecure', $event);"
           :disabled="true"
         />
       </div>
@@ -237,7 +235,7 @@ export default {
     <!-- Test Authentication -->
     <button
       ref="connect"
-      class="btn role-primary mt-20"
+      class="btn role-primary mt-20 align-start"
       :disabled="step !== 1 || !canAuthenticate"
       :loading="step !== 1 || !canAuthenticate"
       @click="connect($event)"
@@ -285,7 +283,6 @@ export default {
         {{ t('driver.nutanix.auth.actions.addToAllowList') }}
       </button>
     </Banner>
-  </div>
 </template>
 <style lang="scss" scoped>
   .allow-list-error {
@@ -297,5 +294,9 @@ export default {
   }
   .icon-spacer {
     width: 24px;
+  }
+
+  .align-start {
+    align-self: flex-start;
   }
 </style>

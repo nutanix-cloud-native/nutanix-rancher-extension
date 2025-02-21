@@ -1,11 +1,12 @@
 <script>
 import { parseSi, formatSi, UNITS, FRACTIONAL } from '@shell/utils/units';
-// import { LabeledInput } from '@components/Form/LabeledInput';
-import LabeledInput from '../components/LabeledInput.vue';
+import LabeledInput from "./LabeledInput.vue";
 import { _EDIT } from '@shell/config/query-params';
 
 export default {
   components: { LabeledInput },
+
+  emits: ['update:value', 'update:validation', 'change', 'blur'],
 
   props: {
     /**
@@ -121,18 +122,18 @@ export default {
       default: ''
     },
 
-    status: {
-      type:    String,
-      default: null
-    },
-
     /**
      * Optionally delay on input while typing
      */
     delay: {
       type:    Number,
       default: 0
-    }
+    },
+
+    positive: {
+      type:    Boolean,
+      default: false,
+    },
   },
 
   computed: {
@@ -197,8 +198,12 @@ export default {
       }
     },
 
-    update(inputValue, emitType) {
+    update(inputValue) {
       let out = inputValue === '' ? null : inputValue;
+
+      if (this.positive && inputValue < 0) {
+        out = 0;
+      }
 
       if (this.outputModifier) {
         out = out === null ? null : `${ inputValue }${ this.unit }`;
@@ -208,7 +213,7 @@ export default {
         out = this.unit ? parseSi(`${ out }${ this.unit }`) : parseInt(out);
       }
 
-      this.$emit(emitType, out);
+      this.$emit('update:value', out);
     },
   }
 };
@@ -230,9 +235,8 @@ export default {
     :required="required"
     :placeholder="placeholder"
     :hide-arrows="hideArrows"
-    :status="status"
-    @change="update($event.target.value, 'input')"
-    @blur="update($event.target.value, 'input')"
+    @change="update($event.target.value)"
+    @blur="update($event.target.value)"
     @keyup="update($event.target.value, 'keyup')"
   >
     <template #suffix>
