@@ -27,7 +27,8 @@ for old Rancher version please check branch `release-2.9.x`
   ![image](https://github.com/user-attachments/assets/37209f6a-241e-4ec3-9f1c-cba8b0297fc0)
 
 - From the `Extensions` / `Available` page, install the Nutanix extension
-  ![image](https://github.com/user-attachments/assets/cd648fe3-8dee-42c9-be76-2ff90538f486)
+  ![image](https://github.com/user-attachments/assets/df785168-bae3-43c4-9620-63ffaab3bd7f)
+
 
 
 ## Development
