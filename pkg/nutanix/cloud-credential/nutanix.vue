@@ -101,7 +101,7 @@ export default {
 
         // this.$refs.connect.$el.click();
 
-        this['error'] = ""; // TODO:
+        this['error'] = "";
         this.connect();
 
 
@@ -151,9 +151,9 @@ export default {
         if (res.error._status === 502 && !this.hostInAllowList()) {
           this['errorAllowHost'] = true;
         } else if (res.error._status === 401) {
-          this['error'] = "Authentification Failed";
-        }else {
-          this['error'] = res.error.message ? res.error.message : "Something Went wrong";
+          this['error'] = "Authentication Failed";
+        } else {
+          this['error'] = res.error.message ? res.error.message : "Something went wrong";
         }
       } else {
         okay = true;

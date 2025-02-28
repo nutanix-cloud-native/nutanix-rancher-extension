@@ -1,6 +1,6 @@
 <script>
 import { parseSi, formatSi, UNITS, FRACTIONAL } from '@shell/utils/units';
-import LabeledInput from "./LabeledInput.vue";
+import LabeledInput from './LabeledInput.vue';
 import { _EDIT } from '@shell/config/query-params';
 
 export default {

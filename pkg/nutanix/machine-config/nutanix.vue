@@ -44,8 +44,8 @@ function initUnitOptions(enabled = false, init = null, _min = null, _max = null)
 export default {
   components: {
     Banner, Loading, KeyValue,
-    LabeledSelect, UnitInput, CodeMirror,  Collapse, Checkbox, RadioGroup, UnitInput
-},
+    LabeledSelect, UnitInput, CodeMirror, Collapse, Checkbox, RadioGroup
+  },
 
   mixins: [CreateEditView],
 
@@ -90,11 +90,11 @@ export default {
     this.$emit('validationChanged', false);
 
     if (this.mode == _CREATE) {
-      this.initAuthentification();
+      this.initAuthentication();
       return
     }
 
-    await this.initAuthentification();
+    await this.initAuthentication();
 
     this.clusters.selected = this.clusters.baseOption.filter(e => e.label == this.value.cluster)[0];
 
@@ -166,7 +166,7 @@ export default {
   methods: {
     stringify,
 
-    async initAuthentification() {
+    async initAuthentication() {
       let obj = this.InitData();
       Object.keys(obj).forEach((key) => {
         (this)[key] = obj[key];
@@ -409,7 +409,6 @@ export default {
       this.value.vmCpuPassthrough = this.vmCpuPassthrough;
       this.value.vmCores = this.vmCores.selected.toString();
       this.value.vmMem = (this.vmMem.selected * 1024).toString();
-      // this.value.vmMem = []; // Uncomment to test the value by generate an error with the driver
       this.value.vmImage = this.vmImage.selected?.name;
       this.value.vmImageSize = this.vmImageSize.selected.toString();
       const networks = _.uniq(this.networks.selected.map(e => e.extId));
