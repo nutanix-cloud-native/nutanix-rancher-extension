@@ -1,8 +1,6 @@
 import { importTypes } from '@rancher/auto-import';
 import { IPlugin } from '@shell/core/types';
 
-// const ID = 'nutanix';
-
 // Init the package
 export default function(plugin: IPlugin) {
   // Auto-import localization file(s)

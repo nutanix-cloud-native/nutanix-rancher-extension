@@ -247,11 +247,6 @@ export class Nutanix {
       Accept: 'application/json',
       "Content-Type": 'application/json',
       "X-API-Auth-Header": 'Basic ' + btoa(this.username + ':' + this.password),
-      // "X-Api-CattleAuth-Header": `Basic credId=${this.credentialID} usernameField=${this.username} passwordField=${this.password}`
-      // TODO: TRY those exemples
-      // headers['X-API-CattleAuth-Header'] = `Bearer credID=${ credentialId } passwordField=token`;
-      // set(headers, 'x-api-cattleauth-header', `Bearer credID=${ token } passwordField=privateKeyPassphrase`);
-      // headers['x-api-cattleauth-header'] = `Bearer credID=${ credentialId } passwordField=accessToken`;
     };
 
     try {
