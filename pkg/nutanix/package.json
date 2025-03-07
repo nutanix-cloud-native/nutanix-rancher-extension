@@ -1,8 +1,8 @@
 {
   "name": "nutanix",
-  "description": "Nutanix Node Driver UI",
+  "description": "Nutanix UI Extension provides a seamless interface for configuring Rancher clusters on Nutanix Cloud Platform",
   "icon": "https://raw.githubusercontent.com/nutanix-cloud-native/nutanix-rancher-extension/main/pkg/nutanix/assets/icon-nutanix.svg",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": false,
   "rancher": {
     "annotations": {
