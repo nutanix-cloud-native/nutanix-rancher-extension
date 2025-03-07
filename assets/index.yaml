@@ -13,9 +13,9 @@ entries:
       catalog.cattle.io/ui-extensions-version: '>= 3.0.0 < 4.0.0'
     apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-03-07T13:03:17.038354732Z"
+    created: "2025-03-07T13:09:50.918624022Z"
     description: Nutanix Node Driver UI
-    digest: 8e18cb037c2624eef9545641ae45695f8240c8a72ce747bcda550e61f29a28dc
+    digest: 84923ac53885d10860917a90c8cf33808df34067ffd1c679aa424658aa9eaef6
     icon: https://raw.githubusercontent.com/nutanix-cloud-native/nutanix-rancher-extension/main/pkg/nutanix/assets/icon-nutanix.svg
     name: nutanix
     type: application
@@ -82,4 +82,4 @@ entries:
     urls:
     - assets/nutanix/nutanix-0.5.0.tgz
     version: 0.5.0
-generated: "2025-03-07T13:03:17.037763662Z"
+generated: "2025-03-07T13:09:50.918231039Z"
