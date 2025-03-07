@@ -1,3 +1,4 @@
+plugin/img/icon-nutanix.4a7741be.svg
 plugin/nutanix-1.0.0.umd.min.262.js
 plugin/nutanix-1.0.0.umd.min.262.js.map
 plugin/nutanix-1.0.0.umd.min.37.js
