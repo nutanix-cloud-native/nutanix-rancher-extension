@@ -8,4 +8,5 @@ export default function(plugin: IPlugin) {
 
   // Provide plugin metadata from package.json
   plugin.metadata = require('./package.json');
+  plugin.register('image', 'providers/nutanix.svg', require('./assets/icon-nutanix.svg'));
 }
