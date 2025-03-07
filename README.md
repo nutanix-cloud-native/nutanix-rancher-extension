@@ -10,6 +10,10 @@ for old Rancher version please check branch [release-2.9.x](https://github.com/n
 
 ## Installation
 
+The Nutanix UI Extension is now available in the Rancher Partner Extension Catalog. You can install it directly from the Rancher UI.
+
+#### Manual procedure
+
 - In the Rancher UI, Go to the `Configuration` / `Extensions page`  
 ![image](https://github.com/user-attachments/assets/f1453121-59bd-4654-8f36-83d3348e4048)
 
