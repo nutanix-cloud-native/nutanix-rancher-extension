@@ -12,15 +12,37 @@ entries:
       catalog.cattle.io/ui-component: plugins
       catalog.cattle.io/ui-extensions-version: '>= 3.0.0 < 4.0.0'
     apiVersion: v2
-    appVersion: 1.0.0
-    created: "2025-03-07T13:09:50.918624022Z"
-    description: Nutanix Node Driver UI
-    digest: 84923ac53885d10860917a90c8cf33808df34067ffd1c679aa424658aa9eaef6
+    appVersion: 1.0.1
+    created: "2025-03-07T14:54:29.495880961Z"
+    description: Nutanix UI Extension provides a seamless interface for configuring
+      Rancher clusters on Nutanix Cloud Platform
+    digest: 053009b15f4c897a5f7d39aeb7f4ac13f3b8802e1105c8a2ad9e1a0bbc15be76
     icon: https://raw.githubusercontent.com/nutanix-cloud-native/nutanix-rancher-extension/main/pkg/nutanix/assets/icon-nutanix.svg
     name: nutanix
     type: application
     urls:
-    - assets/nutanix/nutanix-1.0.0.tgz
+    - assets/nutanix/nutanix-1.0.1.tgz
+    version: 1.0.1
+  - annotations:
+      catalog.cattle.io/certified: rancher
+      catalog.cattle.io/kube-version: '>= 1.16.0-0'
+      catalog.cattle.io/namespace: cattle-ui-plugin-system
+      catalog.cattle.io/os: linux
+      catalog.cattle.io/permits-os: linux, windows
+      catalog.cattle.io/rancher-version: '>= 2.10.0-0'
+      catalog.cattle.io/scope: management
+      catalog.cattle.io/ui-component: plugins
+      catalog.cattle.io/ui-extensions-version: '>= 3.0.0 < 4.0.0'
+    apiVersion: v2
+    appVersion: 1.0.0
+    created: "2025-02-21T17:32:22.183962547Z"
+    description: Nutanix Node Driver UI
+    digest: c59c44c493fda5b7399979365d86c736829d7f4b6df262c9a6c76d9003ef18cb
+    icon: https://raw.githubusercontent.com/nutanix-cloud-native/nutanix-rancher-extension/main/pkg/nutanix/assets/icon-nutanix.svg
+    name: nutanix
+    type: application
+    urls:
+    - https://github.com/nutanix-cloud-native/nutanix-rancher-extension/releases/download/nutanix-1.0.0/nutanix-1.0.0.tgz
     version: 1.0.0
   - annotations:
       catalog.cattle.io/certified: rancher
@@ -82,4 +104,4 @@ entries:
     urls:
     - assets/nutanix/nutanix-0.5.0.tgz
     version: 0.5.0
-generated: "2025-03-07T13:09:50.918231039Z"
+generated: "2025-03-07T14:54:29.495131246Z"
