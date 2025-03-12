@@ -316,7 +316,7 @@ export default {
         let clusterReferenceIdList = e.status.resources.cluster_reference_list.map(c => c.uuid);
 
         this.clusters.options = this.clusters.baseOption.filter(c =>
-          clusterReferenceIdList.includes(c.extId)
+          clusterReferenceIdList.includes(c.value.extId)
         );
       }
 
