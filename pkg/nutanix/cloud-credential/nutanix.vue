@@ -152,6 +152,8 @@ export default {
           this['errorAllowHost'] = true;
         } else if (res.error._status === 401) {
           this['error'] = "Authentication Failed";
+        } else if (res.error._status === 404) {
+          this['error'] = "API method not found. PC version 2024.3 or higher is required";
         } else {
           this['error'] = res.error.message ? res.error.message : "Something went wrong";
         }
