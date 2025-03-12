@@ -286,7 +286,7 @@ export default {
 
         if (this.projectName.selected) {
           let networkIdList = this.projectName.selected.status.resources.subnet_reference_list.map(c => c.uuid);
-          this.networks.options = this.networks.baseOption.filter(network => networkIdList.includes(network.extId)); //  || vpcIdList.includes(network.value.extId)
+          this.networks.options = this.networks.baseOption.filter(network => networkIdList.includes(network.value.extId)); //  || vpcIdList.includes(network.value.extId)
           this.networks.baseOption = this.networks.options;
         }
 
