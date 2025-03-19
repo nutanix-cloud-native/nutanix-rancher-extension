@@ -14,7 +14,7 @@ import { stringify } from '@shell/utils/error';
 import { _CREATE, _EDIT, _VIEW } from '@shell/config/query-params';
 
 import { Nutanix } from '../nutanix.ts';
-import UnitInput from '../components/UnitInput.vue';
+import UnitInput from "@shell/components/form/UnitInput";
 
 // this function is used to setup all Select input option
 function initOptions(enabled = false, init = null, options = []) {
@@ -590,7 +590,6 @@ export default {
             :required="true"
             :min="vmCores.min"
             :max="vmCores.max"
-            @keyup="validInput($event, vmCores); canAuthenticate()"
             @update:value="validInput($event, vmCores); canAuthenticate()"
             :status="vmCores.status"
             :tooltip="vmCores.tooltip"
