@@ -14,7 +14,7 @@ import { stringify } from '@shell/utils/error';
 import { _CREATE, _EDIT, _VIEW } from '@shell/config/query-params';
 
 import { Nutanix } from '../nutanix.ts';
-import UnitInput from '../components/UnitInput.vue';
+import UnitInput from "@shell/components/form/UnitInput";
 
 // this function is used to setup all Select input option
 function initOptions(enabled = false, init = null, options = []) {
@@ -113,7 +113,7 @@ export default {
     this.vmImage.selected = this.vmImage.options.find((o) => o.value.name === this.value.vmImage)?.value;
     this.vmImageSize.selected = this.value.vmImageSize;
 
-    this.networks.selected = this.value.vmNetwork.map(e => this.networks.baseOption.find((o) => o.value.extId === e || o.extId === e));
+    this.networks.selected = this.value.vmNetwork.map(e => this.networks.baseOption.find((o) => o.value.extId === e || o.extId === e || o.label === e));
     this.filterNetworks();
     this.bootType = this.value.bootType === "legacy" ? "Legacy" : "UEFI";
     this.vmCategories.selected = this.value.vmCategories.map(e => this.vmCategories.options.find((o) => o.name === e || o.value?.name === e));
@@ -590,7 +590,6 @@ export default {
             :required="true"
             :min="vmCores.min"
             :max="vmCores.max"
-            @keyup="validInput($event, vmCores); canAuthenticate()"
             @update:value="validInput($event, vmCores); canAuthenticate()"
             :status="vmCores.status"
             :tooltip="vmCores.tooltip"

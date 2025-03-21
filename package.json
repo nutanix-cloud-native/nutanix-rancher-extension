@@ -1,12 +1,12 @@
 {
   "name": "nutanix",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "engines": {
     "node": ">=20.0.0"
   },
   "dependencies": {
     "@rancher/components": "^0.3.0-alpha.1",
-    "@rancher/shell": "^3.0.0",
+    "@rancher/shell": "^3.0.2",
     "@types/lodash": "4.14.184",
     "css-loader": "6.7.3"
   },
