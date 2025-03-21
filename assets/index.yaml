@@ -12,16 +12,38 @@ entries:
       catalog.cattle.io/ui-component: plugins
       catalog.cattle.io/ui-extensions-version: '>= 3.0.0 < 4.0.0'
     apiVersion: v2
-    appVersion: 1.0.2
-    created: "2025-03-12T17:31:25.703355894Z"
+    appVersion: 1.1.0
+    created: "2025-03-21T09:50:34.191342478Z"
     description: Nutanix UI Extension provides a seamless interface for configuring
       Rancher clusters on Nutanix Cloud Platform
-    digest: 66ddeb530fa795f17ca61eae858f72bbf365b8760d879453419db547b64206c6
+    digest: fe3de7433fd549c33d73d63a5226111e6c6cd97b241b32b616264e0579613f22
     icon: https://raw.githubusercontent.com/nutanix-cloud-native/nutanix-rancher-extension/main/pkg/nutanix/assets/icon-nutanix.svg
     name: nutanix
     type: application
     urls:
-    - assets/nutanix/nutanix-1.0.2.tgz
+    - assets/nutanix/nutanix-1.1.0.tgz
+    version: 1.1.0
+  - annotations:
+      catalog.cattle.io/certified: rancher
+      catalog.cattle.io/kube-version: '>= 1.16.0-0'
+      catalog.cattle.io/namespace: cattle-ui-plugin-system
+      catalog.cattle.io/os: linux
+      catalog.cattle.io/permits-os: linux, windows
+      catalog.cattle.io/rancher-version: '>= 2.10.0-0'
+      catalog.cattle.io/scope: management
+      catalog.cattle.io/ui-component: plugins
+      catalog.cattle.io/ui-extensions-version: '>= 3.0.0 < 4.0.0'
+    apiVersion: v2
+    appVersion: 1.0.2
+    created: "2025-03-12T17:31:42.473637742Z"
+    description: Nutanix UI Extension provides a seamless interface for configuring
+      Rancher clusters on Nutanix Cloud Platform
+    digest: 8dacefe068c03f973b3cf11a5acc952fc75a2e9a4a849df8c3885ffe8ed92b8f
+    icon: https://raw.githubusercontent.com/nutanix-cloud-native/nutanix-rancher-extension/main/pkg/nutanix/assets/icon-nutanix.svg
+    name: nutanix
+    type: application
+    urls:
+    - https://github.com/nutanix-cloud-native/nutanix-rancher-extension/releases/download/nutanix-1.0.2/nutanix-1.0.2.tgz
     version: 1.0.2
   - annotations:
       catalog.cattle.io/certified: rancher
@@ -126,4 +148,4 @@ entries:
     urls:
     - assets/nutanix/nutanix-0.5.0.tgz
     version: 0.5.0
-generated: "2025-03-12T17:31:25.702515053Z"
+generated: "2025-03-21T09:50:34.190751888Z"
