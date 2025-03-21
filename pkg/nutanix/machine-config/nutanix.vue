@@ -113,7 +113,7 @@ export default {
     this.vmImage.selected = this.vmImage.options.find((o) => o.value.name === this.value.vmImage)?.value;
     this.vmImageSize.selected = this.value.vmImageSize;
 
-    this.networks.selected = this.value.vmNetwork.map(e => this.networks.baseOption.find((o) => o.value.extId === e || o.extId === e));
+    this.networks.selected = this.value.vmNetwork.map(e => this.networks.baseOption.find((o) => o.value.extId === e || o.extId === e || o.label === e));
     this.filterNetworks();
     this.bootType = this.value.bootType === "legacy" ? "Legacy" : "UEFI";
     this.vmCategories.selected = this.value.vmCategories.map(e => this.vmCategories.options.find((o) => o.name === e || o.value?.name === e));
