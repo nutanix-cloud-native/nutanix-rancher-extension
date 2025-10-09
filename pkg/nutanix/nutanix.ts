@@ -100,7 +100,10 @@ export class Nutanix {
           name: network.subnetType === "OVERLAY" ? `${network.name} (${vpc.name})` : network.name,
         }
       },
-      filter: (network: any) => (network.subnetType == "OVERLAY" || network.clusterReference == this.clusterReferenceId) && !network.isExternal,
+      filter: (network: any) => 
+        (network.subnetType == "OVERLAY" || 
+          network.clusterReference == this.clusterReferenceId || 
+          network?.clusterReferenceList.includes(this.clusterReferenceId)) && !network.isExternal,
       initial
     });
   }
