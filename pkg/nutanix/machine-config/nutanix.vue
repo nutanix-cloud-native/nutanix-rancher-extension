@@ -394,7 +394,7 @@ export default {
 
     // This function is call when the user add a wrong tag on a select input multiple
     labelSelectAddWrongTag(object, component) {
-      component.selected = object.filter(network => network);
+      component.selected = object?.filter(network => network) || [];
     },
 
     // Save all input data is the VUE values
@@ -411,7 +411,7 @@ export default {
       this.value.vmMem = (this.vmMem.selected * 1024).toString();
       this.value.vmImage = this.vmImage.selected?.name;
       this.value.vmImageSize = this.vmImageSize.selected.toString();
-      const networks = _.uniq(this.networks.selected.map(e => e.extId));
+      const networks = _.uniq(this.networks.selected.map(e => e.extId || e.value.extId));
       this.value.vmNetwork = networks;
       this.value.bootType = this.bootType.toLowerCase();
 
