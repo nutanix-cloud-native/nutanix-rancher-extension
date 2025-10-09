@@ -13,10 +13,10 @@ entries:
       catalog.cattle.io/ui-extensions-version: '>= 3.0.0 < 4.0.0'
     apiVersion: v2
     appVersion: 1.1.0
-    created: "2025-03-21T09:50:34.191342478Z"
+    created: "2025-10-09T11:43:43.806279708Z"
     description: Nutanix UI Extension provides a seamless interface for configuring
       Rancher clusters on Nutanix Cloud Platform
-    digest: fe3de7433fd549c33d73d63a5226111e6c6cd97b241b32b616264e0579613f22
+    digest: 0039e42fb0ae30c8c274477f3a52cd3813304a0669b14c7fb7087331a7ca12e0
     icon: https://raw.githubusercontent.com/nutanix-cloud-native/nutanix-rancher-extension/main/pkg/nutanix/assets/icon-nutanix.svg
     name: nutanix
     type: application
@@ -148,4 +148,4 @@ entries:
     urls:
     - assets/nutanix/nutanix-0.5.0.tgz
     version: 0.5.0
-generated: "2025-03-21T09:50:34.190751888Z"
+generated: "2025-10-09T11:43:43.805901434Z"

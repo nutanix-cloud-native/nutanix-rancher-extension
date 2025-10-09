@@ -3,6 +3,10 @@ fullnameOverride: ""
 plugin:
   enabled: true
   versionOverride: ""
+  endpoint: >-
+    https://raw.githubusercontent.com/nutanix-cloud-native/nutanix-rancher-extension/gh-pages/extensions/nutanix/1.1.0
+  compressedEndpoint: >-
+    https://raw.githubusercontent.com/nutanix-cloud-native/nutanix-rancher-extension/gh-pages/extensions/nutanix/1.1.0.tgz
   noCache: false
   noAuth: false
   metadata:
