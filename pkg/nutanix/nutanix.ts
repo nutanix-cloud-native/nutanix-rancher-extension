@@ -1,5 +1,7 @@
 import { isArray } from "lodash";
 
+export const NTNX_API_KEY_HEADER = 'X-ntnx-api-key';
+
 type Options = {
   value: any;
   api: string;
@@ -43,10 +45,15 @@ export class Nutanix {
   public async testConnection() {
     const baseUrl = `/meta/proxy/${this.endpoint}:${this.port}`;
     const url = `${baseUrl}/api/clustermgmt/v4.0/config/clusters`;
-    const headers = {
-      Accept: 'application/json',
-      "X-API-Auth-Header": 'Basic ' + btoa(this.username + ':' + this.password)
+    const headers: any = {
+      Accept: 'application/json'
     };
+
+    if (this.username === NTNX_API_KEY_HEADER) {
+      headers[NTNX_API_KEY_HEADER] = this.password;
+    } else {
+      headers['X-API-Auth-Header'] = 'Basic ' + btoa(this.username + ':' + this.password);
+    }
 
     try {
       const res = await this.$dispatch('management/request', {
@@ -100,9 +107,9 @@ export class Nutanix {
           name: network.subnetType === "OVERLAY" ? `${network.name} (${vpc.name})` : network.name,
         }
       },
-      filter: (network: any) => 
-        (network.subnetType == "OVERLAY" || 
-          network.clusterReference == this.clusterReferenceId || 
+      filter: (network: any) =>
+        (network.subnetType == "OVERLAY" ||
+          network.clusterReference == this.clusterReferenceId ||
           network?.clusterReferenceList.includes(this.clusterReferenceId)) && !network.isExternal,
       initial
     });
@@ -246,11 +253,16 @@ export class Nutanix {
     const baseUrl = `/meta/proxy/${this.endpoint}:${this.port}`;
     const url = `${baseUrl}${api}`;
 
-    const headers = {
+    const headers: any = {
       Accept: 'application/json',
-      "Content-Type": 'application/json',
-      "X-API-Auth-Header": 'Basic ' + btoa(this.username + ':' + this.password),
+      "Content-Type": 'application/json'
     };
+
+    if (this.username === NTNX_API_KEY_HEADER) {
+      headers[NTNX_API_KEY_HEADER] = this.password;
+    } else {
+      headers['X-API-Auth-Header'] = 'Basic ' + btoa(this.username + ':' + this.password);
+    }
 
     try {
       const res = await this.$dispatch('management/request', {

@@ -2,9 +2,9 @@
 
 #### Requirements
 
-- Nutanix Prism Central 2024.3
-- Nutanix Rancher Node Driver v3.6.0
-- Rancher 2.10.x 
+- Nutanix Prism Central 7.3 or higher
+- Nutanix Rancher Node Driver v3.8.0
+- Rancher 2.11.x 
 
 for old Rancher version please check branch [release-2.9.x](https://github.com/nutanix-cloud-native/nutanix-rancher-extension/tree/release-2.9.x)
 
