@@ -1,0 +1,54 @@
+version: "3"
+
+vars:
+  REGISTRY: '{{default "" .REGISTRY}}'
+  ORGANIZATION: '{{default "" .ORGANIZATION}}'
+
+tasks:
+  default:
+    desc: Show available tasks
+    cmds:
+      - task --list
+
+  install:
+    desc: Install dependencies
+    cmds:
+      - yarn install
+
+  clean:
+    desc: Clean build artifacts
+    cmds:
+      - yarn clean
+      - rm -rf node_modules dist-pkg
+
+  serve:
+    desc: Serve the extension (alias for dev)
+    deps:
+      - build
+    cmds:
+      - yarn serve-pkgs
+
+  build:
+    desc: Build the extension
+    deps:
+      - install
+    cmds:
+      - yarn build-pkg nutanix
+
+  container-build:
+    desc: Build container extension
+    deps:
+      - install
+    env:
+      DOCKER_DEFAULT_PLATFORM: linux/amd64
+    cmds:
+      - yarn publish-pkgs -c -r {{ .REGISTRY }} -o {{ .ORGANIZATION }}
+
+  container-push:
+    desc: Build and Push container extension to registry
+    deps:
+      - install
+    env:
+      DOCKER_DEFAULT_PLATFORM: linux/amd64
+    cmds:
+      - yarn publish-pkgs -c -p -r {{ .REGISTRY }} -o {{ .ORGANIZATION }}

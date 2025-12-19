@@ -3,7 +3,7 @@ import { parse as parseUrl } from '@shell/utils/url';
 import { _CREATE } from '@shell/config/query-params';
 import { _VIEW } from '@shell/config/query-params';
 
-import { Nutanix } from '../nutanix.ts';
+import { Nutanix, NTNX_API_KEY_HEADER } from '../nutanix.ts';
 
 import Banner from '@components/Banner/Banner.vue';
 import { LabeledInput } from '@components/Form/LabeledInput';
@@ -37,6 +37,15 @@ export default {
     });
   },
 
+  mounted() {
+    // Detect auth type from existing credentials
+    if (this.value?.decodedData?.username === NTNX_API_KEY_HEADER) {
+      this.authType = 'apiKey';
+    } else if (this.value?.decodedData?.username) {
+      this.authType = 'password';
+    }
+  },
+
   data() {
     return {
       step:           1,
@@ -46,10 +55,17 @@ export default {
       driver:         {},
       error:          '',
       success:        '',
+      authType:       '',
     };
   },
 
   computed: {
+    authTypeOptions() {
+      return [
+        { label: this.t('driver.nutanix.auth.authTypes.password'), value: 'password' },
+        { label: this.t('driver.nutanix.auth.authTypes.apiKey'), value: 'apiKey' },
+      ];
+    },
 
     hostname() {
       const u = parseUrl(this.value.decodedData.endpoint);
@@ -59,12 +75,40 @@ export default {
 
     // Function used to verified if we can clic on the Authenticate button
     canAuthenticate() {
+      if (!this.authType) {
+        return false;
+      }
+      if (this.authType === 'apiKey') {
+        return !!this.value?.decodedData?.endpoint &&
+          !!this.value?.decodedData?.password;
+      }
       return !!this.value?.decodedData?.endpoint &&
         !!this.value?.decodedData?.username &&
         !!this.value?.decodedData?.password;
     }
   },
   emits: ['validationChanged'],
+
+  watch: {
+    authType(newVal) {
+      // Reset test status when auth type changes
+      this.error = '';
+      this.success = '';
+      this.errorAllowHost = false;
+      this.$emit('validationChanged', false);
+      
+      if (newVal === 'apiKey') {
+        this.value.setData('username', NTNX_API_KEY_HEADER);
+        this.value.setData('password', '');
+      } else if (newVal === 'password') {
+        // Clear username when switching back to password mode
+        if (this.value.decodedData.username === NTNX_API_KEY_HEADER) {
+          this.value.setData('username', '');
+          this.value.setData('password', '');
+        }
+      }
+    }
+  },
 
   methods: {
 
@@ -152,6 +196,8 @@ export default {
           this['errorAllowHost'] = true;
         } else if (res.error._status === 401) {
           this['error'] = "Authentication Failed";
+        } else if (res.error._status === 403) {
+          this['error'] = "Permission Denied";
         } else if (res.error._status === 404) {
           this['error'] = "API method not found. PC version 2024.3 or higher is required";
         } else {
@@ -159,7 +205,7 @@ export default {
         }
       } else {
         okay = true;
-        this['success'] = `Welcome ${this.value.decodedData.username}, connected to ${this.value.decodedData.endpoint}`;
+        this['success'] = `Connection to ${this.value.decodedData.endpoint} successful`;
       }
 
       this['busy'] = false;
@@ -194,7 +240,22 @@ export default {
         />
       </div>
     </div>
-    <div class="row">
+
+    <div class="row mt-20">
+      <div class="col span-12">
+        <LabeledSelect
+          :value="authType"
+          :options="authTypeOptions"
+          label-key="driver.nutanix.auth.fields.authType"
+          :mode="mode"
+          :disabled="step !== 1"
+          @update:value="authType = $event"
+        />
+      </div>
+    </div>
+
+    <!-- Password Authentication -->
+    <div v-if="authType === 'password'" class="row">
       <div class="col span-6"> <!-- Username -->
         <LabeledInput
           :value="value.decodedData.username"
@@ -214,6 +275,22 @@ export default {
           class="mt-20"
           label-key="driver.nutanix.auth.fields.password"
           placeholder-key="driver.nutanix.auth.placeholders.password"
+          type="password"
+          :mode="mode"
+          @update:value="value.setData('password', $event);"
+        />
+      </div>
+    </div>
+
+    <!-- API Key Authentication -->
+    <div v-if="authType === 'apiKey'" class="row">
+      <div class="col span-12"> <!-- API Key -->
+        <LabeledInput
+          :value="value.decodedData.password"
+          :disabled="step !== 1"
+          class="mt-20"
+          label-key="driver.nutanix.auth.fields.apiKey"
+          placeholder-key="driver.nutanix.auth.placeholders.apiKey"
           type="password"
           :mode="mode"
           @update:value="value.setData('password', $event);"

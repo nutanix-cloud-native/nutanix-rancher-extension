@@ -6,8 +6,10 @@ driver:
         authenticate: Test Authentication
         addToAllowList: Add host to allow list and retry
       fields:
+        authType: Identity Type
         password: Password
         username: Username
+        apiKey: API Key
         endpoint: Nutanix Endpoint
         port: Port
         project: Project
@@ -15,8 +17,12 @@ driver:
       placeholders:
         password: ""
         username: ""
+        apiKey: Enter your API key
         endpoint: e.g. hostname or ip
         port: "9440"
+      authTypes:
+        password: User
+        apiKey: Service Account
       errors:
         notAllowed: "Rancher could not communicate with the Nutanix server - this may be because the server `{ hostname }` is not configured in the node driver allow list"
     config:
