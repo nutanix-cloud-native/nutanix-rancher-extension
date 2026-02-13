@@ -11,6 +11,72 @@ type Options = {
   initial?: string;
   name?: string;
 }
+
+/**
+ * Rate limiter to prevent hitting API rate limits
+ * Max 5 requests per second for VPC endpoints
+ */
+class RateLimiter {
+  private queue: Array<() => Promise<any>> = [];
+  private processing = false;
+  private maxRequestsPerSecond: number;
+  private requestCount = 0;
+  private lastResetTime = Date.now();
+
+  constructor(maxRequestsPerSecond: number = 5) {
+    this.maxRequestsPerSecond = maxRequestsPerSecond;
+  }
+
+  async execute<T>(fn: () => Promise<T>): Promise<T> {
+    return new Promise((resolve, reject) => {
+      this.queue.push(async () => {
+        try {
+          const result = await fn();
+          resolve(result);
+        } catch (error) {
+          reject(error);
+        }
+      });
+      this.processQueue();
+    });
+  }
+
+  private async processQueue() {
+    if (this.processing || this.queue.length === 0) {
+      return;
+    }
+
+    this.processing = true;
+
+    while (this.queue.length > 0) {
+      const now = Date.now();
+      const timeSinceReset = now - this.lastResetTime;
+
+      // Reset counter every second
+      if (timeSinceReset >= 1000) {
+        this.requestCount = 0;
+        this.lastResetTime = now;
+      }
+
+      // If we've hit the rate limit, wait until the next second
+      if (this.requestCount >= this.maxRequestsPerSecond) {
+        const waitTime = 1000 - timeSinceReset;
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        this.requestCount = 0;
+        this.lastResetTime = Date.now();
+      }
+
+      const task = this.queue.shift();
+      if (task) {
+        this.requestCount++;
+        await task();
+      }
+    }
+
+    this.processing = false;
+  }
+}
+
 /**
  * Helper class for dealing with the nutanix API
  */
@@ -25,6 +91,7 @@ export class Nutanix {
   private endpoints: any;
 
   private $dispatch: any;
+  private rateLimiter: RateLimiter;
 
   constructor($store: any, obj: any) {
     if (obj.nutanixcredentialConfig) {
@@ -39,6 +106,7 @@ export class Nutanix {
       });
     }
 
+    this.rateLimiter = new RateLimiter(5); // Max 5 requests per second
     this.$dispatch = $store.dispatch;
   }
 
@@ -116,7 +184,9 @@ export class Nutanix {
   }
 
   public async getVpc(vpcReference: string) {
-    return await this.makeComputeRequest(`/api/networking/v4.0/config/vpcs/${vpcReference}`);
+    return await this.rateLimiter.execute(() =>
+      this.makeComputeRequest(`/api/networking/v4.0/config/vpcs/${vpcReference}`)
+    );
   }
 
   public async getStorageContainer(value: any, initial?: string) {
