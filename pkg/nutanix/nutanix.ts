@@ -15,13 +15,13 @@ type Options = {
 /**
  * Rate limiter to prevent hitting API rate limits.
  * Configurable to support different rate limits for different endpoint types.
+ * Uses a rolling window approach to ensure no more than N requests occur within any 1-second window.
  */
 class RateLimiter {
   private queue: Array<() => Promise<any>> = [];
   private processing = false;
   private maxRequestsPerSecond: number;
-  private requestCount = 0;
-  private lastResetTime = Date.now();
+  private requestTimestamps: number[] = [];
 
   constructor(maxRequestsPerSecond: number = 5) {
     this.maxRequestsPerSecond = maxRequestsPerSecond;
@@ -50,25 +50,25 @@ class RateLimiter {
 
     while (this.queue.length > 0) {
       const now = Date.now();
-      const timeSinceReset = now - this.lastResetTime;
+      
+      // Remove timestamps older than 1 second (rolling window)
+      this.requestTimestamps = this.requestTimestamps.filter(timestamp => now - timestamp < 1000);
 
-      // Reset counter every second
-      if (timeSinceReset >= 1000) {
-        this.requestCount = 0;
-        this.lastResetTime = now;
-      }
-
-      // If we've hit the rate limit, wait until the next second
-      if (this.requestCount >= this.maxRequestsPerSecond) {
-        const waitTime = 1000 - timeSinceReset;
-        await new Promise(resolve => setTimeout(resolve, waitTime));
-        this.requestCount = 0;
-        this.lastResetTime = Date.now();
+      // If we've hit the rate limit, wait until the oldest request is outside the window
+      if (this.requestTimestamps.length >= this.maxRequestsPerSecond) {
+        const oldestTimestamp = this.requestTimestamps[0];
+        const waitTime = 1000 - (now - oldestTimestamp);
+        if (waitTime > 0) {
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+          // After waiting, clean up the timestamps again
+          const newNow = Date.now();
+          this.requestTimestamps = this.requestTimestamps.filter(timestamp => newNow - timestamp < 1000);
+        }
       }
 
       const task = this.queue.shift();
       if (task) {
-        this.requestCount++;
+        this.requestTimestamps.push(Date.now());
         await task();
       }
     }
