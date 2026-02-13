@@ -13,8 +13,8 @@ type Options = {
 }
 
 /**
- * Rate limiter to prevent hitting API rate limits
- * Max 5 requests per second for VPC endpoints
+ * Rate limiter to prevent hitting API rate limits.
+ * Configurable to support different rate limits for different endpoint types.
  */
 class RateLimiter {
   private queue: Array<() => Promise<any>> = [];
