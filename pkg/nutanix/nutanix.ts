@@ -41,6 +41,11 @@ class RateLimiter {
     });
   }
 
+  private cleanupOldTimestamps(now: number) {
+    const oneSecondAgo = now - 1000;
+    this.requestTimestamps = this.requestTimestamps.filter(timestamp => timestamp > oneSecondAgo);
+  }
+
   private async processQueue() {
     if (this.processing || this.queue.length === 0) {
       return;
@@ -50,13 +55,9 @@ class RateLimiter {
 
     while (this.queue.length > 0) {
       const now = Date.now();
-      const oneSecondAgo = now - 1000;
       
       // Remove timestamps older than 1 second (rolling window)
-      // Only filter if we actually have timestamps to filter
-      if (this.requestTimestamps.length > 0) {
-        this.requestTimestamps = this.requestTimestamps.filter(timestamp => timestamp > oneSecondAgo);
-      }
+      this.cleanupOldTimestamps(now);
 
       // If we've hit the rate limit, wait until the oldest request is outside the window
       if (this.requestTimestamps.length >= this.maxRequestsPerSecond) {
@@ -65,9 +66,7 @@ class RateLimiter {
         if (waitTime > 0) {
           await new Promise(resolve => setTimeout(resolve, waitTime));
           // After waiting, clean up the timestamps again
-          const newNow = Date.now();
-          const newOneSecondAgo = newNow - 1000;
-          this.requestTimestamps = this.requestTimestamps.filter(timestamp => timestamp > newOneSecondAgo);
+          this.cleanupOldTimestamps(Date.now());
         }
       }
 
