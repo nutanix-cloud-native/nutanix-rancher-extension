@@ -54,18 +54,19 @@ class RateLimiter {
     this.processing = true;
 
     while (this.queue.length > 0) {
+      let now = Date.now();
+      
       // Remove timestamps older than 1 second (rolling window)
-      this.cleanupOldTimestamps(Date.now());
+      this.cleanupOldTimestamps(now);
 
       // If we've hit the rate limit, wait until the oldest request is outside the window
       // Note: After cleanup, if length >= maxRequestsPerSecond, the array is guaranteed to be non-empty
       if (this.requestTimestamps.length >= this.maxRequestsPerSecond) {
         const oldestTimestamp = this.requestTimestamps[0];
-        const now = Date.now();
         const waitTime = 1000 - (now - oldestTimestamp);
         if (waitTime > 0) {
           await new Promise(resolve => setTimeout(resolve, waitTime));
-          // After waiting, clean up again with a fresh timestamp since time has elapsed
+          // After waiting, clean up again since time has elapsed
           this.cleanupOldTimestamps(Date.now());
         }
       }
