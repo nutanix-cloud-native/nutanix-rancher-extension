@@ -55,7 +55,7 @@ class RateLimiter {
 
     while (this.queue.length > 0) {
       const now = Date.now();
-      
+
       // Remove timestamps older than 1 second (rolling window)
       this.cleanupOldTimestamps(now);
 
