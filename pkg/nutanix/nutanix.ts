@@ -95,16 +95,19 @@ export class Nutanix {
   }
 
   public async getNetwork(value: any, initial?: string) {
+    // Fetch all VPCs once and build a lookup table
+    const vpcMap = await this.buildVpcMap();
+
     return await this.getOptions({
       value,
       api: '/api/networking/v4.0/config/subnets',
       field: 'data',
       mapper: async (network: any) => {
-        const vpc = network.subnetType === "OVERLAY" ? (await this.getVpc(network.vpcReference)).data : undefined;
+        const vpc = network.subnetType === "OVERLAY" ? vpcMap.get(network.vpcReference) : undefined;
         return {
           ...network,
           baseName: network.name,
-          name: network.subnetType === "OVERLAY" ? `${network.name} (${vpc.name})` : network.name,
+          name: network.subnetType === "OVERLAY" ? `${network.name} (${vpc?.name || 'Unknown VPC'})` : network.name,
         }
       },
       filter: (network: any) =>
@@ -115,8 +118,25 @@ export class Nutanix {
     });
   }
 
-  public async getVpc(vpcReference: string) {
-    return await this.makeComputeRequest(`/api/networking/v4.0/config/vpcs/${vpcReference}`);
+  private async buildVpcMap(): Promise<Map<string, any>> {
+    const vpcMap = new Map<string, any>();
+
+    try {
+      const res = await this.makeComputeRequest('/api/networking/v4.0/config/vpcs');
+
+      if (res && res.data) {
+        // Build the lookup table mapping VPC reference to VPC data
+        res.data.forEach((vpc: any) => {
+          if (vpc.extId) {
+            vpcMap.set(vpc.extId, vpc);
+          }
+        });
+      }
+    } catch (e) {
+      console.error('Error fetching VPCs:', e);
+    }
+
+    return vpcMap;
   }
 
   public async getStorageContainer(value: any, initial?: string) {
