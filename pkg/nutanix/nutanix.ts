@@ -122,7 +122,7 @@ export class Nutanix {
     const vpcMap = new Map<string, any>();
 
     try {
-      const res = await this.makeComputeRequest('/api/networking/v4.0/config/vpcs');
+      const res = await this.makeComputeRequest(this.withPage('/api/networking/v4.0/config/vpcs', 0));
 
       if (res && res.data) {
         // Build the lookup table mapping VPC reference to VPC data
@@ -183,7 +183,7 @@ export class Nutanix {
     const pageCount = Math.ceil(total / initialDataLength);
     const data = [];
     for (let i = 1; i < pageCount; i++) {
-      const nextPageResponse = await this.makeComputeRequest(`${apiPath}?$page=${i}`);
+      const nextPageResponse = await this.makeComputeRequest(this.withPage(apiPath, i));
       data.push(...nextPageResponse.data);
     }
 
@@ -194,7 +194,7 @@ export class Nutanix {
     const pageCount = Math.ceil(total / initialDataLength);
     const entities = [];
     for (let i = 1; i < pageCount; i++) {
-      const nextPageResponse = await this.makeComputeRequest(`${apiPath}?$page=${i}`, 'POST');
+      const nextPageResponse = await this.makeComputeRequest(this.withPage(apiPath, i), 'POST');
       entities.push(...nextPageResponse.entities);
     }
 
@@ -211,7 +211,7 @@ export class Nutanix {
     let res;
 
     if (api === '/api/nutanix/v3/projects/list') {
-      res = await this.makeComputeRequest(api, 'POST');
+      res = await this.makeComputeRequest(this.withPage(api, 0), 'POST');
       const total = res?.metadata?.total_matches ?? 0;
       const pageCount = res?.entities?.length ?? 0;
       if (pageCount < total) {
@@ -220,7 +220,7 @@ export class Nutanix {
       }
     }
     else {
-      res = await this.makeComputeRequest(api);
+      res = await this.makeComputeRequest(this.withPage(api, 0));
       const total = res?.metadata?.totalAvailableResults ?? 0;
       const pageCount = res?.data?.length ?? 0;
 
@@ -313,5 +313,11 @@ export class Nutanix {
         value: p
       };
     });
+  }
+
+  private withPage(apiPath: string, page: number): string {
+    const separator = apiPath.includes('?') ? '&' : '?';
+
+    return `${apiPath}${separator}$page=${page}`;
   }
 }
