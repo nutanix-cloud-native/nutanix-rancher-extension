@@ -153,7 +153,7 @@ export class Nutanix {
       value,
       api: '/api/clustermgmt/v4.1/config/storage-containers',
       field: 'data',
-      filter: (storage: any) => storage.clusterExtId == this.clusterReferenceId,
+      filter: (storage: any) => storage.clusterExtId === this.clusterReferenceId,
       initial
     });
   }
