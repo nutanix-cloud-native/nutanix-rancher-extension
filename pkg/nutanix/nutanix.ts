@@ -336,7 +336,11 @@ export class Nutanix {
       return true;
     });
 
-    const sorted = (unique || []).sort((a: any, b: any) => a.name.localeCompare(b.name));
+    const sorted = (unique || []).sort((a: any, b: any) => {
+      const nameA = a?.name ?? '';
+      const nameB = b?.name ?? '';
+      return nameA.localeCompare(nameB);
+    });
     const nameCounts = sorted.reduce((counts: Map<string, number>, item: any) => {
       const key = item?.name;
 
