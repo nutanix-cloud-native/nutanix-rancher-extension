@@ -44,7 +44,7 @@ export class Nutanix {
 
   public async testConnection() {
     const baseUrl = `/meta/proxy/${this.endpoint}:${this.port}`;
-    const url = `${baseUrl}/api/clustermgmt/v4.0/config/clusters`;
+    const url = `${baseUrl}/api/clustermgmt/v4.1/config/clusters`;
     const headers: any = {
       Accept: 'application/json'
     };
@@ -78,7 +78,7 @@ export class Nutanix {
   public async getClusterList(value: any, initial?: string) {
     return await this.getOptions({
       value,
-      api: "/api/clustermgmt/v4.0/config/clusters",
+      api: "/api/clustermgmt/v4.1/config/clusters",
       field: 'data',
       filter: (cluster: any) => cluster.config.hypervisorTypes.includes("AHV"),
       initial
@@ -88,7 +88,7 @@ export class Nutanix {
   public async getImages(value: any, initial?: string) {
     return await this.getOptions({
       value,
-      api: '/api/vmm/v4.0/content/images',
+      api: '/api/vmm/v4.1/content/images',
       field: 'data',
       initial
     });
@@ -100,7 +100,7 @@ export class Nutanix {
 
     return await this.getOptions({
       value,
-      api: '/api/networking/v4.0/config/subnets',
+      api: '/api/networking/v4.1/config/subnets',
       field: 'data',
       mapper: async (network: any) => {
         const vpc = network.subnetType === "OVERLAY" ? vpcMap.get(network.vpcReference) : undefined;
@@ -122,7 +122,7 @@ export class Nutanix {
     const vpcMap = new Map<string, any>();
 
     try {
-      const res = await this.makeComputeRequest(this.withPage('/api/networking/v4.0/config/vpcs', 0));
+      const res = await this.makeComputeRequest(this.withPage('/api/networking/v4.1/config/vpcs', 0));
 
       if (res && res.data) {
         // Build the lookup table mapping VPC reference to VPC data
@@ -142,7 +142,7 @@ export class Nutanix {
   public async getStorageContainer(value: any, initial?: string) {
     return await this.getOptions({
       value,
-      api: '/api/clustermgmt/v4.0/config/storage-containers',
+      api: '/api/clustermgmt/v4.1/config/storage-containers',
       field: 'data',
       filter: (storage: any) => storage.clusterExtId == this.clusterReferenceId,
       initial
@@ -152,7 +152,7 @@ export class Nutanix {
   public async getCategories(value: any, initial?: string) {
     return await this.getOptions({
       value,
-      api: '/api/prism/v4.0/config/categories',
+      api: '/api/prism/v4.1/config/categories',
       field: 'data',
       mapper: (categorie: any) => { return { ...categorie, name: `${categorie.key}=${categorie.value}` } },
       filter: (categorie: any) => categorie.key !== "Project",
