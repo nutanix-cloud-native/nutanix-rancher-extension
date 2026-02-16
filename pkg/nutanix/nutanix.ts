@@ -120,20 +120,29 @@ export class Nutanix {
 
   private async buildVpcMap(): Promise<Map<string, any>> {
     const vpcMap = new Map<string, any>();
+    const vpcOptions: any = {
+      busy: false,
+      enabled: false,
+      selected: '',
+      options: []
+    };
 
     try {
-      const res = await this.makeComputeRequest(this.withPage('/api/networking/v4.1/config/vpcs', 0));
+      await this.getOptions({
+        value: vpcOptions,
+        api: '/api/networking/v4.1/config/vpcs',
+        field: 'data'
+      });
 
-      if (res && res.data) {
-        // Build the lookup table mapping VPC reference to VPC data
-        res.data.forEach((vpc: any) => {
-          if (vpc.extId) {
-            vpcMap.set(vpc.extId, vpc);
-          }
-        });
-      }
+      vpcOptions.options.forEach((option: any) => {
+        const vpc = option?.value;
+
+        if (vpc?.extId) {
+          vpcMap.set(vpc.extId, vpc);
+        }
+      });
     } catch (e) {
-      console.error('Error fetching VPCs:', e);
+      console.error('Error fetching VPCs:', e); // eslint-disable-line no-console
     }
 
     return vpcMap;
@@ -247,8 +256,19 @@ export class Nutanix {
       value.busy = false;
 
       if (value.options.length < list.length) {
-        const unique = list.filter((obj: any, index: any) => {
-          return index !== list.findIndex((o: any) => obj.name === o.name);
+        const seenExtIds = new Set();
+        const unique = list.filter((obj: any) => {
+          if (!obj?.extId) {
+            return false;
+          }
+
+          if (seenExtIds.has(obj.extId)) {
+            return true;
+          }
+
+          seenExtIds.add(obj.extId);
+
+          return false;
         });
         value.duplicates = unique;
       }
@@ -301,15 +321,37 @@ export class Nutanix {
 
 
   private convertToOptions(list: any) {
-    const unique = list.filter((obj: any, index: any) => {
-      return index === list.findIndex((o: any) => obj.name === o.name);
+    const seenExtIds = new Set();
+    const unique = list.filter((obj: any) => {
+      if (!obj?.extId) {
+        return true;
+      }
+
+      if (seenExtIds.has(obj.extId)) {
+        return false;
+      }
+
+      seenExtIds.add(obj.extId);
+
+      return true;
     });
 
     const sorted = (unique || []).sort((a: any, b: any) => a.name.localeCompare(b.name));
+    const nameCounts = sorted.reduce((counts: Map<string, number>, item: any) => {
+      const key = item?.name;
+
+      if (key) {
+        counts.set(key, (counts.get(key) || 0) + 1);
+      }
+
+      return counts;
+    }, new Map<string, number>());
 
     return sorted.map((p: any) => {
+      const hasDuplicateName = !!p?.name && (nameCounts.get(p.name) || 0) > 1;
+
       return {
-        label: p.name,
+        label: hasDuplicateName && p?.extId ? `${p.name} (${p.extId})` : p.name,
         value: p
       };
     });

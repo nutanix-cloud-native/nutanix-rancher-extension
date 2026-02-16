@@ -39,7 +39,7 @@ The Nutanix UI Extension is now available in the Rancher Partner Extension Catal
 
 https://rancher.github.io/dashboard/extensions/extensions-getting-started
 
-Use the `yarn` commands below for local development.
+Use the `mise` commands below for local development.
 
 You can also run the same workflows with `mise` tasks:
 
