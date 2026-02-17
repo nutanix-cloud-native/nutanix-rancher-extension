@@ -44,7 +44,7 @@ export class Nutanix {
 
   public async testConnection() {
     const baseUrl = `/meta/proxy/${this.endpoint}:${this.port}`;
-    const url = `${baseUrl}/api/clustermgmt/v4.0/config/clusters`;
+    const url = `${baseUrl}/api/clustermgmt/v4.1/config/clusters`;
     const headers: any = {
       Accept: 'application/json'
     };
@@ -78,7 +78,7 @@ export class Nutanix {
   public async getClusterList(value: any, initial?: string) {
     return await this.getOptions({
       value,
-      api: "/api/clustermgmt/v4.0/config/clusters",
+      api: "/api/clustermgmt/v4.1/config/clusters",
       field: 'data',
       filter: (cluster: any) => cluster.config.hypervisorTypes.includes("AHV"),
       initial
@@ -88,23 +88,26 @@ export class Nutanix {
   public async getImages(value: any, initial?: string) {
     return await this.getOptions({
       value,
-      api: '/api/vmm/v4.0/content/images',
+      api: '/api/vmm/v4.1/content/images',
       field: 'data',
       initial
     });
   }
 
   public async getNetwork(value: any, initial?: string) {
+    // Fetch all VPCs once and build a lookup table
+    const vpcMap = await this.buildVpcMap();
+
     return await this.getOptions({
       value,
-      api: '/api/networking/v4.0/config/subnets',
+      api: '/api/networking/v4.1/config/subnets',
       field: 'data',
       mapper: async (network: any) => {
-        const vpc = network.subnetType === "OVERLAY" ? (await this.getVpc(network.vpcReference)).data : undefined;
+        const vpc = network.subnetType === "OVERLAY" ? vpcMap.get(network.vpcReference) : undefined;
         return {
           ...network,
           baseName: network.name,
-          name: network.subnetType === "OVERLAY" ? `${network.name} (${vpc.name})` : network.name,
+          name: network.subnetType === "OVERLAY" ? `${network.name} (${vpc?.name || 'Unknown VPC'})` : network.name,
         }
       },
       filter: (network: any) =>
@@ -115,16 +118,42 @@ export class Nutanix {
     });
   }
 
-  public async getVpc(vpcReference: string) {
-    return await this.makeComputeRequest(`/api/networking/v4.0/config/vpcs/${vpcReference}`);
+  private async buildVpcMap(): Promise<Map<string, any>> {
+    const vpcMap = new Map<string, any>();
+    const vpcOptions: any = {
+      busy: false,
+      enabled: false,
+      selected: '',
+      options: []
+    };
+
+    try {
+      await this.getOptions({
+        value: vpcOptions,
+        api: '/api/networking/v4.1/config/vpcs',
+        field: 'data'
+      });
+
+      vpcOptions.options.forEach((option: any) => {
+        const vpc = option?.value;
+
+        if (vpc?.extId) {
+          vpcMap.set(vpc.extId, vpc);
+        }
+      });
+    } catch (e) {
+      console.error('Error fetching VPCs:', e); // eslint-disable-line no-console
+    }
+
+    return vpcMap;
   }
 
   public async getStorageContainer(value: any, initial?: string) {
     return await this.getOptions({
       value,
-      api: '/api/clustermgmt/v4.0/config/storage-containers',
+      api: '/api/clustermgmt/v4.1/config/storage-containers',
       field: 'data',
-      filter: (storage: any) => storage.clusterExtId == this.clusterReferenceId,
+      filter: (storage: any) => storage.clusterExtId === this.clusterReferenceId,
       initial
     });
   }
@@ -132,7 +161,7 @@ export class Nutanix {
   public async getCategories(value: any, initial?: string) {
     return await this.getOptions({
       value,
-      api: '/api/prism/v4.0/config/categories',
+      api: '/api/prism/v4.1/config/categories',
       field: 'data',
       mapper: (categorie: any) => { return { ...categorie, name: `${categorie.key}=${categorie.value}` } },
       filter: (categorie: any) => categorie.key !== "Project",
@@ -163,7 +192,7 @@ export class Nutanix {
     const pageCount = Math.ceil(total / initialDataLength);
     const data = [];
     for (let i = 1; i < pageCount; i++) {
-      const nextPageResponse = await this.makeComputeRequest(`${apiPath}?$page=${i}`);
+      const nextPageResponse = await this.makeComputeRequest(this.withPage(apiPath, i));
       data.push(...nextPageResponse.data);
     }
 
@@ -174,7 +203,7 @@ export class Nutanix {
     const pageCount = Math.ceil(total / initialDataLength);
     const entities = [];
     for (let i = 1; i < pageCount; i++) {
-      const nextPageResponse = await this.makeComputeRequest(`${apiPath}?$page=${i}`, 'POST');
+      const nextPageResponse = await this.makeComputeRequest(this.withPage(apiPath, i), 'POST');
       entities.push(...nextPageResponse.entities);
     }
 
@@ -191,7 +220,7 @@ export class Nutanix {
     let res;
 
     if (api === '/api/nutanix/v3/projects/list') {
-      res = await this.makeComputeRequest(api, 'POST');
+      res = await this.makeComputeRequest(this.withPage(api, 0), 'POST');
       const total = res?.metadata?.total_matches ?? 0;
       const pageCount = res?.entities?.length ?? 0;
       if (pageCount < total) {
@@ -200,7 +229,7 @@ export class Nutanix {
       }
     }
     else {
-      res = await this.makeComputeRequest(api);
+      res = await this.makeComputeRequest(this.withPage(api, 0));
       const total = res?.metadata?.totalAvailableResults ?? 0;
       const pageCount = res?.data?.length ?? 0;
 
@@ -227,8 +256,19 @@ export class Nutanix {
       value.busy = false;
 
       if (value.options.length < list.length) {
-        const unique = list.filter((obj: any, index: any) => {
-          return index !== list.findIndex((o: any) => obj.name === o.name);
+        const seenExtIds = new Set();
+        const unique = list.filter((obj: any) => {
+          if (!obj?.extId) {
+            return false;
+          }
+
+          if (seenExtIds.has(obj.extId)) {
+            return true;
+          }
+
+          seenExtIds.add(obj.extId);
+
+          return false;
         });
         value.duplicates = unique;
       }
@@ -281,17 +321,49 @@ export class Nutanix {
 
 
   private convertToOptions(list: any) {
-    const unique = list.filter((obj: any, index: any) => {
-      return index === list.findIndex((o: any) => obj.name === o.name);
+    const seenExtIds = new Set();
+    const unique = list.filter((obj: any) => {
+      if (!obj?.extId) {
+        return true;
+      }
+
+      if (seenExtIds.has(obj.extId)) {
+        return false;
+      }
+
+      seenExtIds.add(obj.extId);
+
+      return true;
     });
 
-    const sorted = (unique || []).sort((a: any, b: any) => a.name.localeCompare(b.name));
+    const sorted = (unique || []).sort((a: any, b: any) => {
+      const nameA = a?.name ?? '';
+      const nameB = b?.name ?? '';
+      return nameA.localeCompare(nameB);
+    });
+    const nameCounts = sorted.reduce((counts: Map<string, number>, item: any) => {
+      const key = item?.name;
+
+      if (key) {
+        counts.set(key, (counts.get(key) || 0) + 1);
+      }
+
+      return counts;
+    }, new Map<string, number>());
 
     return sorted.map((p: any) => {
+      const hasDuplicateName = !!p?.name && (nameCounts.get(p.name) || 0) > 1;
+
       return {
-        label: p.name,
+        label: hasDuplicateName && p?.extId ? `${p.name} (${p.extId})` : p.name,
         value: p
       };
     });
+  }
+
+  private withPage(apiPath: string, page: number): string {
+    const separator = apiPath.includes('?') ? '&' : '?';
+
+    return `${apiPath}${separator}$page=${page}`;
   }
 }

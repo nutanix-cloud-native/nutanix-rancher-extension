@@ -39,10 +39,19 @@ The Nutanix UI Extension is now available in the Rancher Partner Extension Catal
 
 https://rancher.github.io/dashboard/extensions/extensions-getting-started
 
+Use the `mise` commands below for local development.
+
+You can also run the same workflows with `mise` tasks:
+
+```shell
+mise tasks ls
+mise run <task>
+```
+
 ### Building the Extension
 
 ```shell
-yarn build-pkg nutanix
+mise run build
 ```
 
 This will build the extension as a Vue library and the built extension will be placed in the dist-pkg folder.
@@ -62,7 +71,7 @@ module.exports = config(__dirname, {
 Now we need to serve the built package locally by running the following:
 
 ```shell
-yarn serve-pkgs
+mise run serve
 ```
 
 Next import the extension with the given link.

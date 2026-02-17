@@ -1,0 +1,44 @@
+[env]
+REGISTRY = ""
+ORGANIZATION = ""
+
+[tasks.default]
+description = "Show available tasks"
+run = "mise tasks ls"
+
+[tasks.install]
+description = "Install dependencies"
+run = "yarn install"
+
+[tasks.clean]
+description = "Clean build artifacts"
+run = [
+  "yarn clean",
+  "rm -rf node_modules dist-pkg",
+]
+
+[tasks.serve]
+description = "Serve the extension (alias for dev)"
+depends = ["build"]
+run = "yarn serve-pkgs"
+
+[tasks.build]
+description = "Build the extension"
+depends = ["install"]
+run = "yarn build-pkg nutanix"
+
+[tasks.container-build]
+description = "Build container extension"
+depends = ["install"]
+run = "yarn publish-pkgs -c -r ${REGISTRY} -o ${ORGANIZATION}"
+
+[tasks.container-build.env]
+DOCKER_DEFAULT_PLATFORM = "linux/amd64"
+
+[tasks.container-push]
+description = "Build and Push container extension to registry"
+depends = ["install"]
+run = "yarn publish-pkgs -c -p -r ${REGISTRY} -o ${ORGANIZATION}"
+
+[tasks.container-push.env]
+DOCKER_DEFAULT_PLATFORM = "linux/amd64"
