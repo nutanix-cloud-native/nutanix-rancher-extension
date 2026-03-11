@@ -4,9 +4,20 @@
 
 - Nutanix Prism Central 7.3 or higher
 - Nutanix Rancher Node Driver v3.8.0
-- Rancher 2.11.x 
 
-for old Rancher version please check branch [release-2.9.x](https://github.com/nutanix-cloud-native/nutanix-rancher-extension/tree/release-2.9.x)
+#### Supported version
+
+## Rancher Compatibility Matrix
+
+| Rancher Branch | Supported Version Range | Status        |
+| :------------- | :---------------------- | :------------ |
+| **v2.13**      | `>= 2.13.1`             | ✅ Supported   |
+| **v2.12**      | `2.12.5` — `2.12.7`     | ✅ Supported   |
+| **v2.11**      | `2.11.8` — `2.11.11`    | ✅ Supported   |
+| **Legacy**     | `< 2.11.8`              | ❌ Unsupported |
+
+> [!NOTE]  
+> These ranges include pre-release versions (e.g., `-rc` or `-alpha`) due to the `-0` semantic versioning suffix used in the metadata.
 
 ## Installation
 
