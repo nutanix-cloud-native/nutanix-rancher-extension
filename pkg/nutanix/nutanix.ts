@@ -179,35 +179,17 @@ export class Nutanix {
     });
   }
 
-  // public async getNetworkNames(value: any, initial?: string) {
-  //   return await this.getOptions(value, '/os-tenant-networks', 'networks', (network: any) => {
-  //     return {
-  //       ...network,
-  //       name: network.label
-  //     };
-  //   }, initial);
-  // }
-
-  private async constructTotalResponse(apiPath: string, initialDataLength: number, total: number) {
+  private async constructTotalResponse(apiPath: string, initialDataLength: number, total: number, method: string = 'GET', field: string = 'data') {
+    if (initialDataLength === 0) return [];
     const pageCount = Math.ceil(total / initialDataLength);
-    const data = [];
+    const results = [];
     for (let i = 1; i < pageCount; i++) {
-      const nextPageResponse = await this.makeComputeRequest(this.withPage(apiPath, i));
-      data.push(...nextPageResponse.data);
+      const nextPageResponse = await this.makeComputeRequest(this.withPage(apiPath, i), method);
+      if (nextPageResponse?.[field]) {
+        results.push(...nextPageResponse[field]);
+      }
     }
-
-    return data;
-  }
-
-  private async constructProjectTotalResponse(apiPath: string, initialDataLength: number, total: number) {
-    const pageCount = Math.ceil(total / initialDataLength);
-    const entities = [];
-    for (let i = 1; i < pageCount; i++) {
-      const nextPageResponse = await this.makeComputeRequest(this.withPage(apiPath, i), 'POST');
-      entities.push(...nextPageResponse.entities);
-    }
-
-    return entities;
+    return results;
   }
 
   public async getOptions(options: Options) {
@@ -224,7 +206,7 @@ export class Nutanix {
       const total = res?.metadata?.total_matches ?? 0;
       const pageCount = res?.entities?.length ?? 0;
       if (pageCount < total) {
-        const entities = await this.constructProjectTotalResponse(api, pageCount, total);
+        const entities = await this.constructTotalResponse(api, pageCount, total, 'POST', 'entities');
         res.entities = [...res.entities, ...entities];
       }
     }
@@ -309,7 +291,7 @@ export class Nutanix {
         url,
         headers,
         method: method,
-        data: JSON.stringify({}),
+        ...(method !== 'GET' ? { data: JSON.stringify({}) } : {}),
         redirectUnauthorized: false,
       }, { root: true });
 
