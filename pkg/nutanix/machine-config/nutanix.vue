@@ -394,7 +394,8 @@ export default {
 
     // This function is call when the user add a wrong tag on a select input multiple
     labelSelectAddWrongTag(object, component) {
-      component.selected = object?.filter(network => network) || [];
+      const items = Array.isArray(object) ? object : (object ? [object] : []);
+      component.selected = items.filter(item => item);
     },
 
     // Save all input data is the VUE values
