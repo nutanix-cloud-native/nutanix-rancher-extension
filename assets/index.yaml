@@ -13,16 +13,39 @@ entries:
       catalog.cattle.io/ui-component: plugins
       catalog.cattle.io/ui-extensions-version: '>= 3.0.0 < 4.0.0'
     apiVersion: v2
-    appVersion: 1.2.0
-    created: "2026-03-11T12:56:49.132195946Z"
+    appVersion: 1.2.1
+    created: "2026-03-13T13:42:42.783876762Z"
     description: Nutanix UI Extension provides a seamless interface for configuring
       Rancher clusters on Nutanix Cloud Platform
-    digest: 773e380e1c02980cec045246356996c5a5e4feb8bd0818ff9261dfc48a4b6e2a
+    digest: f6b21b833746482558ab32e059f2917d2af11d99a334bf71760208a40ec7593f
     icon: https://raw.githubusercontent.com/nutanix-cloud-native/nutanix-rancher-extension/main/pkg/nutanix/assets/icon-nutanix.svg
     name: nutanix
     type: application
     urls:
-    - assets/nutanix/nutanix-1.2.0.tgz
+    - assets/nutanix/nutanix-1.2.1.tgz
+    version: 1.2.1
+  - annotations:
+      catalog.cattle.io/certified: rancher
+      catalog.cattle.io/kube-version: '>= 1.16.0-0'
+      catalog.cattle.io/namespace: cattle-ui-plugin-system
+      catalog.cattle.io/os: linux
+      catalog.cattle.io/permits-os: linux, windows
+      catalog.cattle.io/rancher-version: '>= 2.13.1-0 || >= 2.12.5-0 < 2.13.0-0 ||
+        >= 2.11.8-0 < 2.12.0-0'
+      catalog.cattle.io/scope: management
+      catalog.cattle.io/ui-component: plugins
+      catalog.cattle.io/ui-extensions-version: '>= 3.0.0 < 4.0.0'
+    apiVersion: v2
+    appVersion: 1.2.0
+    created: "2026-02-17T19:39:19.408194803Z"
+    description: Nutanix UI Extension provides a seamless interface for configuring
+      Rancher clusters on Nutanix Cloud Platform
+    digest: 7811b2393d21e2516815d8c2b24a66e503465a10d05408c2a62ad4941a8ac9e5
+    icon: https://raw.githubusercontent.com/nutanix-cloud-native/nutanix-rancher-extension/main/pkg/nutanix/assets/icon-nutanix.svg
+    name: nutanix
+    type: application
+    urls:
+    - https://github.com/nutanix-cloud-native/nutanix-rancher-extension/releases/download/nutanix-1.2.0/nutanix-1.2.0.tgz
     version: 1.2.0
   - annotations:
       catalog.cattle.io/certified: rancher
@@ -238,4 +261,4 @@ entries:
     urls:
     - assets/nutanix/nutanix-0.5.0.tgz
     version: 0.5.0
-generated: "2026-03-11T12:56:49.131744329Z"
+generated: "2026-03-13T13:42:42.783419055Z"
