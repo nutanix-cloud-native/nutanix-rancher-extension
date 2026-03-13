@@ -113,7 +113,7 @@ export class Nutanix {
       filter: (network: any) =>
         (network.subnetType == "OVERLAY" ||
           network.clusterReference == this.clusterReferenceId ||
-          network?.clusterReferenceList.includes(this.clusterReferenceId)) && !network.isExternal,
+          network?.clusterReferenceList?.includes(this.clusterReferenceId)) && !network.isExternal,
       initial
     });
   }
